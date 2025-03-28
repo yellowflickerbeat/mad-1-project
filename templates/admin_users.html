@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master - Student Management</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --light-color: #ecf0f1;
+            --background-color: #f4f4f6;
+            --text-color: #333;
+            --border-radius: 8px;
+            --logout-color: #e74c3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+        }
+
+        .vertical-nav {
+            width: 250px;
+            background-color: var(--primary-color);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            transition: 0.3s;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: var(--border-radius);
+            transition: background 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .nav-item span {
+            margin-left: 10px;
+        }
+
+        .logout-btn {
+            background-color: var(--logout-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            margin-top: auto;
+            transition: 0.3s;
+        }
+
+        .logout-btn:hover {
+            opacity: 0.9;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            padding: 40px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-select, .date-input {
+            padding: 10px;
+            border: 1px solid var(--secondary-color);
+            border-radius: var(--border-radius);
+            background: white;
+        }
+
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .student-table th, .student-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .student-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-edit {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-delete {
+            background-color: var(--logout-color);
+            color: white;
+        }
+
+        .btn-reset {
+            background-color: #f39c12;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="vertical-nav">
+        <div>
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-item">📊<span>Users</span></a>
+            <a href="{{ url_for('admin_quiz') }}" class="nav-item">📝 <span>Quiz Management</span></a>
+            <a href="{{ url_for('admin_users') }}" class="nav-item">👥<span>Users</span></a>
+            <a href="{{ url_for('stats') }}" class="nav-item">📈 <span>Performance Reports</span></a>
+        </div>
+        <button class="logout-btn">Logout</button>
+    </nav>
+
+    <main class="main-content">
+        <header class="dashboard-header">
+            <h1>Student Management</h1>
+        </header>
+
+        <div class="filter-section">
+            <select class="filter-select">
+                <option>All Students</option>
+                <option>High Performers</option>
+                <option>Low Performers</option>
+            </select>
+            <select class="filter-select">
+                <option>Qualification</option>
+                <option>Grade 1-5</option>
+                <option>Grade 5-10</option>
+                <option>Grade 10-12</option>
+            </select>
+            <input type="text" class="filter-select" placeholder="Search students...">
+        </div>
+
+        <table class="student-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Qualification</th>
+                    <th>Quizzes</th>
+                    <th>Performance</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.qualification }}</td>
+                    <td>{{ user.quizzes_taken }}</td>
+                    <td>{{ user.performance }}%</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-edit">Edit</button>
+                        <button class="btn btn-delete">Delete</button>
+                        <button class="btn btn-reset">Reset</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>            
+        </table>
+    </main>
+</body>
+</html>
