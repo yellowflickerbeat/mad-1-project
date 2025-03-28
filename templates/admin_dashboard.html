@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master - Admin Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --light-color: #ecf0f1;
+            --background-color: #f4f4f6;
+            --text-color: #333;
+            --border-radius: 8px;
+            --logout-color: #e74c3c;
+            --edit-color: #2ecc71;
+            --delete-color: #e74c3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+        }
+
+        .new-dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 1;
+            right: 0;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .dropdown-content button {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            background: white;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .dropdown-content button:hover {
+            background-color: var(--light-color);
+        }
+
+        .new-dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .add-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 18px;
+            float: right;
+        }
+
+        .add-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .vertical-nav {
+            width: 250px;
+            background-color: var(--primary-color);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            transition: 0.3s;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: var(--border-radius);
+            transition: background 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .nav-item span {
+            margin-left: 10px;
+        }
+
+        .logout-btn {
+            background-color: var(--logout-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            margin-top: auto;
+            transition: 0.3s;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            padding: 40px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 250px;
+        }
+
+        .search-container input {
+            border: none;
+            outline: none;
+            margin-left: 10px;
+            width: 100%;
+        }
+
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .subject-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .subject-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .subject-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .edit-btn {
+            background-color: var(--edit-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .delete-btn {
+            background-color: var(--delete-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .chapters-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .chapter-tag {
+            background: var(--light-color);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chapter-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .subject-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .subject-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .add-chapter-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            cursor: pointer;
+            align-items: right;
+        }
+
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup-content {
+            background: beige;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .popup-content input, 
+        .popup-content textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .popup-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .popup-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .popup-cancel {
+            background-color: #ddd;
+            color: black;
+        }
+
+        .popup-save {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="vertical-nav">
+        <div>
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-item">📊<span>Users</span></a>
+            <a href="{{ url_for('admin_quiz') }}" class="nav-item">📝 <span>Quiz Management</span></a>
+            <a href="{{ url_for('admin_student') }}" class="nav-item">👥<span>Users</span></a>
+            <a href="{{ url_for('stats') }}" class="nav-item">📈 <span>Performance Reports</span></a>
+        </div>
+        <button class="logout-btn">Logout</button>
+    </nav>
+
+    <main class="main-content">
+        <header class="dashboard-header">
+            <h2>Welcome, Admin User</h2>
+            <div class="search-container">
+                🔍 <input type="text" placeholder="Search subjects, chapters...">
+            </div>
+            <div class="new-dropdown">
+                <button class="add-btn">+ New</button>
+                <div class="dropdown-content">
+                    <button onclick="openAddSubjectPopup()">Add Subject</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="subjects-grid">
+            <div class="subject-card">
+                <div class="subject-header">
+                    <h3>Mathematics</h3>
+                    <div class="subject-actions">
+                        <div class="subject-actions">
+                            <button>✏️</button>
+                            <button>🗑️</button>
+                        </div>
+                    </div>
+                </div>
+                <p>Advanced mathematics fundamentals for competitive exams</p>
+                <div class="chapters-list">
+                    <div class="chapter-tag">
+                        Algebra
+                        <span class="chapter-actions">
+                            <button class="edit-btn">Edit</button>
+                            <button class="delete-btn">Delete</button>
+                        </span>
+                    </div>
+                    <div class="chapter-tag">
+                        Geometry
+                        <span class="chapter-actions">
+                            <button class="edit-btn">Edit</button>
+                            <button class="delete-btn">Delete</button>
+                        </span>
+                    </div>
+                    <div class="chapter-tag">
+                        Calculus
+                        <span class="chapter-actions">
+                            <button class="edit-btn">Edit</button>
+                            <button class="delete-btn">Delete</button>
+                        </span>
+                    </div>
+                </div>
+                <button class="add-chapter-btn" onclick="openAddChapterPopup()">+ Add Chapter</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="subject-popup" class="popup">
+        <div class="popup-content">
+            <h3>Add New Subject</h3>
+            <input type="text" placeholder="Subject Name">
+            <textarea placeholder="Subject Description"></textarea>
+            <div class="popup-actions">
+                <button class="popup-cancel" onclick="closePopup()">Cancel</button>
+                <button class="popup-save">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="chapter-popup" class="popup">
+        <div class="popup-content">
+            <h3>Add New Chapter</h3>
+            <input type="text" placeholder="Chapter Name">
+            <textarea placeholder="Chapter Description"></textarea>
+            <div class="popup-actions">
+                <button class="popup-cancel" onclick="closePopup()">Cancel</button>
+                <button class="popup-save">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openAddSubjectPopup() {
+            document.getElementById('subject-popup').style.display = 'flex';
+        }
+
+        function openAddChapterPopup() {
+            document.getElementById('chapter-popup').style.display = 'flex';
+        }
+
+        function closePopup() {
+            document.getElementById('subject-popup').style.display = 'none';
+            document.getElementById('chapter-popup').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
