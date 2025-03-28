@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Subject & Chapter Quizzes</title>
+    <title>Student Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -32,7 +32,6 @@
         }
         .sidebar-menu {
             list-style: none;
-            flex-grow: 1;
         }
         .sidebar-menu li {
             margin-bottom: 15px;
@@ -54,13 +53,13 @@
             color: white;
         }
         .logout-btn {
+            margin-top: auto;
             background-color: #e74c3c;
             color: white;
             border: none;
             padding: 10px;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 20px;
         }
         .main-content {
             flex-grow: 1;
@@ -68,269 +67,117 @@
             background-color: #f4f4f6;
             overflow-y: auto;
         }
-
-        .filter-section {
-            background-color: beige;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            padding: 15px;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-        }
-        .filter-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .filter-select {
-            padding: 8px;
-            border: 1px solid #ecf0f1;
-            border-radius: 5px;
-        }
-        
-        .subjects-grid {
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
-        .subject-card {
+        .stat-card {
             background-color: white;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
         }
-        .subject-header {
-            margin-bottom: 15px;
+        .stat-card:hover {
+            transform: translateY(-5px);
         }
-        .subject-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #2c3e50;
-            display: block;
+        .stat-title {
+            color: #7f8c8d;
             margin-bottom: 10px;
         }
-        .subject-description {
-            color: #7f8c8d;
-            font-size: 14px;
-            margin-bottom: 15px;
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
         }
-        .progress-container {
+        .performance-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .performance-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .chart-placeholder {
+            height: 250px;
+            background-color: #f1f2f6;
             display: flex;
+            justify-content: center;
             align-items: center;
-            margin-bottom: 15px;
+            border-radius: 10px;
         }
-        .progress-text {
-            margin-right: 10px;
-            font-size: 14px;
-            color: #7f8c8d;
-        }
-        .progress-bar {
-            flex-grow: 1;
-            height: 10px;
-            background-color: #ecf0f1;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        .progress {
-            height: 100%;
-            background-color: #2ecc71;
-        }
-        .chapter-list {
-            list-style: none;
-        }
-        .chapter-item {
+        .action-buttons {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #ecf0f1;
+            flex-direction: column;
+            gap: 15px;
         }
-        .chapter-item:last-child {
-            border-bottom: none;
-        }
-        .quiz-button {
+        .action-button {
+            padding: 12px;
             background-color: #3498db;
             color: white;
             border: none;
-            padding: 5px 10px;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
-        .individual-quizzes {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            padding: 20px;
+        .action-button:hover {
+            background-color: #2980b9;
         }
-        .quiz-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        .quiz-card {
-            border: 1px solid #ecf0f1;
-            border-radius: 5px;
-            padding: 15px;
-            text-align: center;
-        }
+        .green-stat { color: #2ecc71; }
+        .brown-stat { color: #8B4513; }
+        .blue-stat { color: #3498db; }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div class="sidebar-logo">QuizMaster</div>
         <ul class="sidebar-menu">
-            <li><a href="#" class="active">Dashboard</a></li>
-            <li><a href="#">My Quizzes</a></li>
+            <li><a href="{{ url_for('student_dashboard') }}" class="active">Dashboard</a></li>
+            <li><a href="{{ url_for('student_quiz') }}">My Quizzes</a></li>
         </ul>
-        <button class="logout-btn">Logout</button>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
     </div>
     
     <div class="main-content">
-
-        <div class="filter-section">
-            <div class="filter-group">
-                <label>Subject:</label>
-                <select class="filter-select">
-                    <option>All Subjects</option>
-                    <option>Mathematics</option>
-                    <option>Science</option>
-                    <option>English</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Chapter:</label>
-                <select class="filter-select">
-                    <option>All Chapters</option>
-                    <option>Algebra</option>
-                    <option>Geometry</option>
-                    <option>Physics</option>
-                    <option>Chemistry</option>
-                    <option>Grammar</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Progress:</label>
-                <select class="filter-select">
-                    <option>All</option>
-                    <option>Not Started</option>
-                    <option>In Progress</option>
-                    <option>Completed</option>
-                </select>
-            </div>
-        </div>
-
-        <h1>Subject Quizzes</h1><br><br>
+        <h1>Student Dashboard</h1>
         
-        <div class="subjects-grid">
-            <div class="subject-card">
-                <div class="subject-header">
-                    <span class="subject-title">Mathematics</span>
-                    <p class="subject-description">Explore mathematical concepts through engaging quizzes covering algebra, geometry, and trigonometry.</p>
-                    <div class="progress-container">
-                        <span class="progress-text">Progress: 60%</span>
-                        <div class="progress-bar">
-                            <div class="progress" style="width: 60%"></div>
-                        </div>
-                    </div>
-                </div>
-                <ul class="chapter-list">
-                    <li class="chapter-item">
-                        <span>Algebra</span>
-                        <button class="quiz-button">Start Quiz</button>
-                    </li>
-                    <li class="chapter-item">
-                        <span>Geometry</span>
-                        <button class="quiz-button">Start Quiz</button>
-                    </li>
-                    <li class="chapter-item">
-                        <span>Trigonometry</span>
-                        <button class="quiz-button">Start Quiz</button>
-                    </li>
-                </ul>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title">Quizzes Done</div>
+                <div class="stat-value green-stat">24</div>
             </div>
-
-            <div class="subject-card">
-                <div class="subject-header">
-                    <span class="subject-title">Science</span>
-                    <p class="subject-description">Dive into scientific exploration with quizzes spanning physics, chemistry, and biology.</p>
-                    <div class="progress-container">
-                        <span class="progress-text">Progress: 40%</span>
-                        <div class="progress-bar">
-                            <div class="progress" style="width: 40%"></div>
-                        </div>
-                    </div>
-                </div>
-                <ul class="chapter-list">
-                    <li class="chapter-item">
-                        <span>Physics</span>
-                        <button class="quiz-button">Start Quiz</button>
-                    </li>
-                    <li class="chapter-item">
-                        <span>Chemistry</span>
-                        <button class="quiz-button">Start Quiz</button>
-                    </li>
-                    <li class="chapter-item">
-                        <span>Biology</span>
-                        <button class="quiz-button">Start Quiz</button>
-                    </li>
-                </ul>
+            <div class="stat-card">
+                <div class="stat-title">Chapters Assigned</div>
+                <div class="stat-value brown-stat">12</div>
             </div>
-
-            <div class="subject-card">
-                <div class="subject-header">
-                    <span class="subject-title">English</span>
-                    <p class="subject-description">Enhance language skills through comprehensive quizzes on grammar, literature, and comprehension.</p>
-                    <div class="progress-container">
-                        <span class="progress-text">Progress: 75%</span>
-                        <div class="progress-bar">
-                            <div class="progress" style="width: 75%"></div>
-                        </div>
-                    </div>
-                </div>
-                <ul class="chapter-list">
-                    <li class="chapter-item">
-                        <span>Grammar</span>
-                        <button class="quiz-button">Start Quiz</button>
-                    </li>
-                    <li class="chapter-item">
-                        <span>Literature</span>
-                        <button class="quiz-button">Start Quiz</button>
-                    </li>
-                    <li class="chapter-item">
-                        <span>Comprehension</span>
-                        <button class="quiz-button">Start Quiz</button>
-                    </li>
-                </ul>
+            <div class="stat-card">
+                <div class="stat-title">Scheduled Quizzes</div>
+                <div class="stat-value blue-stat">5</div>
             </div>
         </div>
 
-        <h2>Individual Quizzes</h2><br>
-        <div class="individual-quizzes">
-            <div class="quiz-grid">
-                <div class="quiz-card">
-                    <h3>Quick Math</h3>
-                    <p>10 Questions</p>
-                    <button class="quiz-button">Start</button>
+        <div class="performance-section">
+            <div class="performance-card">
+                <h3>Quiz Performance</h3><br>
+                <div class="chart-placeholder">
+                    Performance Chart Placeholder
                 </div>
-                <div class="quiz-card">
-                    <h3>Science Basics</h3>
-                    <p>15 Questions</p>
-                    <button class="quiz-button">Start</button>
-                </div>
-                <div class="quiz-card">
-                    <h3>English Vocabulary</h3>
-                    <p>20 Questions</p>
-                    <button class="quiz-button">Start</button>
-                </div>
-                <div class="quiz-card">
-                    <h3>General Knowledge</h3>
-                    <p>25 Questions</p>
-                    <button class="quiz-button">Start</button>
+            </div>
+            <div class="performance-card">
+                <h3>Quick Actions</h3><br><br><br>
+                <div class="action-buttons">
+                    <button class="action-button">Start New Quiz</button>
+                    <button class="action-button">View Past Attempts</button>
+                    <button class="action-button">Performance Analytics</button>
                 </div>
             </div>
         </div>
     </div>
+    
 </body>
 </html>
