@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master - Admin Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --light-color: #ecf0f1;
+            --background-color: #f4f4f6;
+            --text-color: #333;
+            --border-radius: 8px;
+            --logout-color: #e74c3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+        }
+
+        .vertical-nav {
+            width: 250px;
+            background-color: var(--primary-color);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            transition: 0.3s;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: var(--border-radius);
+            transition: background 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .nav-item span {
+            margin-left: 10px;
+        }
+
+        .logout-btn {
+            background-color: var(--logout-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            margin-top: auto;
+            transition: 0.3s;
+        }
+
+        .logout-btn:hover {
+            opacity: 0.9;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            padding: 40px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .action-container {
+            position: relative;
+        }
+
+        .add-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 18px;
+        }
+
+        .add-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 45px;
+            left: 0;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .dropdown button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: none;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .dropdown button:hover {
+            background: var(--light-color);
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-select, .date-input {
+            padding: 10px;
+            border: 1px solid var(--secondary-color);
+            border-radius: var(--border-radius);
+            background: white;
+        }
+
+        .date-range-container {
+            display: none;
+            gap: 10px;
+        }
+    </style>
+    <script>
+        function toggleDropdown() {
+            document.getElementById("dropdown-menu").style.display =
+                document.getElementById("dropdown-menu").style.display === "block" ? "none" : "block";
+        }
+
+        function toggleDateRange(select) {
+            const dateRangeContainer = document.getElementById("date-range-container");
+            if (select.value === "Custom Range") {
+                dateRangeContainer.style.display = "flex";
+            } else {
+                dateRangeContainer.style.display = "none";
+            }
+        }
+    </script>
+</head>
+<body>
+    <nav class="vertical-nav">
+        <div>
+            <a href="admin_quiz.html" class="nav-item"> 📝 <span>Quiz Management</span> </a>
+            <a href="#" class="nav-item"> 👥 <span>User Analysis</span> </a>
+            <a href="#" class="nav-item"> 📈 <span>Performance Reports</span> </a>
+        </div>
+        <button class="logout-btn">Logout</button>
+    </nav>
+
+    <main class="main-content">
+        <header class="dashboard-header">
+            <h1>Quiz Management</h1>
+            <div class="action-container">
+                <button class="add-btn" onclick="toggleDropdown()">+ New</button>
+                <div id="dropdown-menu" class="dropdown">
+                    <button>Add Quiz</button>
+                    <button>Add Chapter</button>
+                    <button>Add Subject</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="filter-section">
+            <select class="filter-select">
+                <option>All Subjects</option>
+                <option>Mathematics</option>
+                <option>Science</option>
+                <option>History</option>
+            </select>
+            <select class="filter-select" onchange="toggleDateRange(this)">
+                <option>Date Range</option>
+                <option>Last Week</option>
+                <option>Last Month</option>
+                <option>This Year</option>
+                <option>Custom Range</option>
+            </select>
+            <div id="date-range-container" class="date-range-container">
+                <input type="date" class="date-input">
+                <input type="date" class="date-input">
+            </div>
+            <select class="filter-select">
+                <option>Quiz Status</option>
+                <option>Active</option>
+                <option>Inactive</option>
+                <option>Scheduled</option>
+            </select>
+        </div>
+    </main>
+</body>
+</html>

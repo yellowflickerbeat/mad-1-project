@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamPrep Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url("/static/images/homepage.avif");
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+        
+        .login-container {
+            max-width: 420px;
+            margin: 8vh auto;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+        
+        .brand-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .brand-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .brand-tagline {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .login-form label, .register-form label {
+            font-weight: 500;
+            color: #34495e;
+            margin-bottom: 8px;
+        }
+        
+        .login-form input, .register-form input {
+            border: 1px solid #dfe4ea;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .login-form .btn, .register-form .btn {
+            padding: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .role-selector {
+            display: flex;
+            margin-bottom: 25px;
+            border: 1px solid #dfe4ea;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .role-option {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .role-option.active {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .role-option:not(.active) {
+            background-color: #f8f9fa;
+            color: #555;
+        }
+        
+        .role-option:first-child {
+            border-right: 1px solid #dfe4ea;
+        }
+        
+        .helper-text {
+            font-size: 13px;
+            color: #7f8c8d;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .separator {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+        }
+        
+        .separator-line {
+            flex: 1;
+            height: 1px;
+            background-color: #dfe4ea;
+        }
+        
+        .separator-text {
+            padding: 0 15px;
+            color: #95a5a6;
+            font-size: 13px;
+        }
+        
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-container">
+            <div class="brand-section">
+                <div class="brand-name">ExamPrep Hub</div>
+                <div class="brand-tagline">Prepare smarter, score better</div>
+            </div>
+            
+            <form id="login-form" class="login-form" action="{{ url_for('login') }}" method="post">
+                <div class="role-selector">
+                    <div class="role-option active" data-role="user" id="user-role">Student</div>
+                    <div class="role-option" data-role="admin" id="admin-role">Administrator</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                
+                <input type="hidden" id="role" name="role" value="user">
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Sign In</button>
+                </div>
+            </form>
+            
+            <div class="separator">
+                <div class="separator-line"></div>
+                <div class="separator-text">OR</div>
+                <div class="separator-line"></div>
+            </div>
+            
+            <div id="register-section" class="register-link">
+                Don't have an account? <a href="#" id="show-register">Register now</a>
+            </div>
+            
+            <div id="register-form-container" style="display:none;">
+                <form class="register-form" action="{{ url_for('register') }}" method="post">
+                    <div class="mb-3">
+                        <label for="full-name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="full-name" name="full_name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="register-password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="register-password" name="password" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="qualification" class="form-label">Qualification</label>
+                        <input type="text" class="form-control" id="qualification" name="qualification" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="date-of-birth" class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" id="date-of-birth" name="date_of_birth" required>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </div>
+                </form>
+                
+                <div class="separator">
+                    <div class="separator-line"></div>
+                    <div class="separator-text">OR</div>
+                    <div class="separator-line"></div>
+                </div>
+                
+                <div class="register-link">
+                    Already have an account? <a href="#" id="show-login">Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Simple role selector functionality
+        document.querySelectorAll('.role-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove active class from all options
+                document.querySelectorAll('.role-option').forEach(el => {
+                    el.classList.remove('active');
+                });
+                
+                // Add active class to clicked option
+                this.classList.add('active');
+                
+                // Update hidden input value
+                document.getElementById('role').value = this.getAttribute('data-role');
+            });
+        });
+
+        // Registration form toggle
+        const showRegister = document.getElementById('show-register');
+        const showLogin = document.getElementById('show-login');
+        const loginForm = document.getElementById('login-form');
+        const registerSection = document.getElementById('register-section');
+        const registerFormContainer = document.getElementById('register-form-container');
+
+        showRegister.addEventListener('click', function(e) {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            registerSection.style.display = 'none';
+            registerFormContainer.style.display = 'block';
+        });
+
+        showLogin.addEventListener('click', function(e) {
+            e.preventDefault();
+            loginForm.style.display = 'block';
+            registerSection.style.display = 'block';
+            registerFormContainer.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
