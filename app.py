@@ -83,12 +83,36 @@ def student_quiz():
         return redirect(url_for('index'))
     return render_template('student_quiz.html')
 
+# Add this route to your existing app.py
+
+@app.route('/admin_quiz')
+def admin_quiz():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return redirect(url_for('index'))
+    return render_template('admin_quiz.html')
+
+@app.route('/stats')
+def stats():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return redirect(url_for('index'))
+    return render_template('stats.html')
+
+def admin_student():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return redirect(url_for('index'))
+    return render_template('admin_student.html')
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
     if 'user_id' not in session or session.get('role') != 'admin':
         return redirect(url_for('index'))
-    return render_template('admin_dash.html')
+    return render_template('admin_dashboard.html')
+
+@app.route('/admin_student')
+def admin_student():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return redirect(url_for('index'))
+    return render_template('admin_student.html')
 
 @app.route('/logout')
 def logout():
