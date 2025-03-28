@@ -97,10 +97,11 @@ def stats():
         return redirect(url_for('index'))
     return render_template('stats.html')
 
-def admin_student():
-    if 'user_id' not in session or session.get('role') != 'admin':
-        return redirect(url_for('index'))
-    return render_template('admin_student.html')
+
+@app.route('/admin_users')
+def admin_users():
+    users = User.query.all()  # Fetch all users from the database
+    return render_template('admin_users.html', users=users)
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
@@ -108,11 +109,6 @@ def admin_dashboard():
         return redirect(url_for('index'))
     return render_template('admin_dashboard.html')
 
-@app.route('/admin_student')
-def admin_student():
-    if 'user_id' not in session or session.get('role') != 'admin':
-        return redirect(url_for('index'))
-    return render_template('admin_student.html')
 
 @app.route('/logout')
 def logout():
