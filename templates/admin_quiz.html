@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Master - Admin Dashboard</title>
+    <title>Quiz Master - Quiz Management</title>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -13,6 +13,8 @@
             --text-color: #333;
             --border-radius: 8px;
             --logout-color: #e74c3c;
+            --edit-color: #2ecc71;
+            --delete-color: #e74c3c;
         }
 
         * {
@@ -74,10 +76,6 @@
             transition: 0.3s;
         }
 
-        .logout-btn:hover {
-            opacity: 0.9;
-        }
-
         .main-content {
             margin-left: 250px;
             width: calc(100% - 250px);
@@ -86,96 +84,230 @@
 
         .dashboard-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
+            gap: 20px;
         }
 
-        .action-container {
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 250px;
+        }
+
+        .search-container input {
+            border: none;
+            outline: none;
+            margin-left: 10px;
+            width: 100%;
+        }
+
+        .quizzes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .quiz-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             position: relative;
         }
 
-        .add-btn {
-            background-color: var(--secondary-color);
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .quiz-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .edit-btn {
+            background-color: var(--edit-color);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: var(--border-radius);
+            padding: 5px 10px;
+            border-radius: 3px;
             cursor: pointer;
-            transition: 0.3s;
+        }
+
+        .delete-btn {
+            background-color: var(--delete-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .questions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .question-tag {
+            background: var(--light-color);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .question-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .quiz-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .quiz-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
             font-size: 18px;
         }
 
-        .add-btn:hover {
-            background-color: #2980b9;
-        }
-
-        .dropdown {
-            display: none;
-            position: absolute;
-            top: 45px;
-            left: 0;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .dropdown button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            background: none;
+        .add-question-btn {
+            background: var(--secondary-color);
+            color: white;
             border: none;
-            text-align: left;
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin-top: 15px;
             cursor: pointer;
-            transition: 0.3s;
+            align-items: right;
         }
 
-        .dropdown button:hover {
-            background: var(--light-color);
-        }
-
-        .filter-section {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .filter-select, .date-input {
-            padding: 10px;
-            border: 1px solid var(--secondary-color);
-            border-radius: var(--border-radius);
-            background: white;
-        }
-
-        .date-range-container {
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
             display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .popup-content input, 
+        .popup-content textarea,
+        .popup-content select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .popup-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .popup-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .popup-cancel {
+            background-color: #ddd;
+            color: black;
+        }
+
+        .popup-save {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .question-option {
+            display: flex;
+            align-items: center;
             gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .confirm-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .confirm-content {
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            width: 300px;
+            text-align: center;
+        }
+        
+        .confirm-actions {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        
+        .confirm-actions button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .confirm-yes {
+            background-color: var(--delete-color);
+            color: white;
+        }
+        
+        .confirm-no {
+            background-color: #ddd;
+            color: black;
         }
     </style>
-    <script>
-        function toggleDropdown() {
-            document.getElementById("dropdown-menu").style.display =
-                document.getElementById("dropdown-menu").style.display === "block" ? "none" : "block";
-        }
-
-        function toggleDateRange(select) {
-            const dateRangeContainer = document.getElementById("date-range-container");
-            if (select.value === "Custom Range") {
-                dateRangeContainer.style.display = "flex";
-            } else {
-                dateRangeContainer.style.display = "none";
-            }
-        }
-    </script>
 </head>
 <body>
     <nav class="vertical-nav">
         <div>
-            <a href="{{ url_for('admin_dashboard') }}" class="nav-item">📊<span>Users</span></a>
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-item">📊<span>Dashboard</span></a>
             <a href="{{ url_for('admin_quiz') }}" class="nav-item">📝 <span>Quiz Management</span></a>
-            <a href="{{ url_for('admin_student') }}" class="nav-item">👥<span>Users</span></a>
+            <a href="{{ url_for('admin_users') }}" class="nav-item">👥<span>Users</span></a>
             <a href="{{ url_for('stats') }}" class="nav-item">📈 <span>Performance Reports</span></a>
         </div>
         <button class="logout-btn">Logout</button>
@@ -183,42 +315,309 @@
 
     <main class="main-content">
         <header class="dashboard-header">
-            <h1>Quiz Management</h1>
-            <div class="action-container">
-                <button class="add-btn" onclick="toggleDropdown()">+ New</button>
-                <div id="dropdown-menu" class="dropdown">
-                    <button>Add Quiz</button>
-                    <button>Add Chapter</button>
-                    <button>Add Subject</button>
-                </div>
+            <h2>Quiz Management</h2>
+            <div class="search-container">
+                🔍 <input type="text" placeholder="Search quizzes, questions...">
             </div>
         </header>
 
-        <div class="filter-section">
-            <select class="filter-select">
-                <option>All Subjects</option>
-                <option>Mathematics</option>
-                <option>Science</option>
-                <option>History</option>
-            </select>
-            <select class="filter-select" onchange="toggleDateRange(this)">
-                <option>Date Range</option>
-                <option>Last Week</option>
-                <option>Last Month</option>
-                <option>This Year</option>
-                <option>Custom Range</option>
-            </select>
-            <div id="date-range-container" class="date-range-container">
-                <input type="date" class="date-input">
-                <input type="date" class="date-input">
+    
+
+
+
+
+
+        <div class="quizzes-grid">
+            {% for quiz in quizzes %}
+            <div class="quiz-card" id="quiz-card-{{ quiz.id }}">
+                <div class="quiz-header">
+                    <h3>{{ quiz.title }}</h3>
+                    <div class="quiz-actions">
+                        <button onclick="editQuiz('{{ quiz.id }}')">✏️</button>
+                        <button onclick="confirmDeleteQuiz('{{ quiz.id }}')">🗑️</button>
+                    </div>
+                </div>
+                <div class="questions-list">
+                    {% for question in quiz.questions %}
+                    <div class="question-tag" id="question-{{ quiz.id }}-{{ question.id }}">
+                        {{ question.title }}
+                        <span class="question-actions">
+                            <button class="delete-btn" onclick="confirmDeleteQuestion('{{ quiz.id }}', '{{ question.id }}')">Delete</button>
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="add-question-btn" onclick="openAddQuestionPopup('{{ quiz.id }}')">+ Add Question</button>
             </div>
-            <select class="filter-select">
-                <option>Quiz Status</option>
-                <option>Active</option>
-                <option>Inactive</option>
-                <option>Scheduled</option>
-            </select>
+            {% endfor %}
         </div>
     </main>
+
+    <div id="question-popup" class="popup">
+        <div class="popup-content">
+            <h3>Add New Question</h3>
+            <input type="hidden" id="chapter-id" value="">
+            <input type="hidden" id="quiz-id" value="">
+            
+            <div>
+                <label for="chapter-select">Chapter ID:</label>
+                <select id="chapter-select">
+                    <option value="ch1">Chapter 1</option>
+                    <option value="ch2">Chapter 2</option>
+                    <option value="ch3">Chapter 3</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="question-title">Question Title:</label>
+                <input type="text" id="question-title" placeholder="Enter your question">
+            </div>
+            
+            <div>
+                <label>Options:</label>
+                <div id="options-container">
+                    <div class="question-option">
+                        <input type="radio" name="correct-answer" value="0">
+                        <input type="text" placeholder="Enter option 1">
+                    </div>
+                    <div class="question-option">
+                        <input type="radio" name="correct-answer" value="1">
+                        <input type="text" placeholder="Enter option 2">
+                    </div>
+                    <div class="question-option">
+                        <input type="radio" name="correct-answer" value="2">
+                        <input type="text" placeholder="Enter option 3">
+                    </div>
+                    <div class="question-option">
+                        <input type="radio" name="correct-answer" value="3">
+                        <input type="text" placeholder="Enter option 4">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="popup-actions">
+                <button class="popup-cancel" onclick="closePopup()">Cancel</button>
+                <button class="popup-save" onclick="saveQuestion()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-quiz-popup" class="popup">
+        <div class="popup-content">
+            <h3>Edit Quiz</h3>
+            <input type="hidden" id="edit-chapter-id" value="">
+            <input type="hidden" id="edit-quiz-id" value="">
+            <div>
+                <label for="edit-quiz-title">Title:</label>
+                <input type="text" id="edit-quiz-title" placeholder="Enter quiz title">
+            </div>
+            <div>
+                <label for="edit-quiz-description">Description:</label>
+                <textarea id="edit-quiz-description" placeholder="Quiz Description" rows="3">{{ quiz.description }}</textarea>
+            </div>
+            <div class="popup-actions">
+                <button class="popup-cancel" onclick="closePopup()">Cancel</button>
+                <button class="popup-save" onclick="saveQuizEdits()">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="delete-confirm-popup" class="confirm-popup">
+        <div class="confirm-content">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete this item?</p>
+            <input type="hidden" id="delete-type" value="">
+            <input type="hidden" id="delete-chapter-id" value="">
+            <input type="hidden" id="delete-quiz-id" value="">
+            <input type="hidden" id="delete-question-id" value="">
+            <div class="confirm-actions">
+                <button class="confirm-no" onclick="closeConfirmPopup()">Cancel</button>
+                <button class="confirm-yes" onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const chapterId = urlParams.get('chapterId');
+        
+        // Open question popup
+        function openAddQuestionPopup(chapterId, quizId) {
+            document.getElementById('chapter-id').value = chapterId;
+            document.getElementById('quiz-id').value = quizId;
+            document.getElementById('chapter-select').value = chapterId;
+            document.getElementById('question-popup').style.display = 'flex';
+        }
+
+    
+
+        
+        // Edit quiz
+        function editQuiz(chapterId, quizId) {
+            document.getElementById('edit-chapter-id').value = chapterId;
+            document.getElementById('edit-quiz-id').value = quizId;
+            
+            // In a real app, you would populate the description with the existing value
+            // For demo purposes, we'll just set a placeholder
+            if (quizId === 'q1') {
+                document.getElementById('edit-quiz-title').value = "Basic concepts and fundamental principles";
+                document.getElementById('edit-quiz-description').value = "Basic concepts and fundamental principles";
+            } else if (quizId === 'q2') {
+                document.getElementById('edit-quiz-title').value = "Advanced topics and problem-solving techniques";
+                document.getElementById('edit-quiz-description').value = "Advanced topics and problem-solving techniques";
+            }
+            
+            document.getElementById('edit-quiz-popup').style.display = 'flex';
+        }
+        
+        // Save quiz edits
+        function saveQuizEdits() {
+            const quizId = document.getElementById('edit-quiz-id').value;
+            const title = document.getElementById('edit-quiz-title').value;
+            const description = document.getElementById('edit-quiz-description').value;
+            
+            fetch('/edit_quiz', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    quiz_id: quizId, 
+                    title: title,
+                    description: description
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Quiz updated successfully!");
+                    location.reload();
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(error => console.error("Error:", error));
+            
+            closePopup();
+        }
+        
+        // Confirm delete quiz
+        function confirmDeleteQuiz(chapterId, quizId) {
+            document.getElementById('delete-type').value = 'quiz';
+            document.getElementById('delete-chapter-id').value = chapterId;
+            document.getElementById('delete-quiz-id').value = quizId;
+            document.getElementById('delete-confirm-popup').style.display = 'flex';
+        }
+        
+        // Confirm delete question
+        function confirmDeleteQuestion(chapterId, quizId, questionId) {
+            document.getElementById('delete-type').value = 'question';
+            document.getElementById('delete-chapter-id').value = chapterId;
+            document.getElementById('delete-quiz-id').value = quizId;
+            document.getElementById('delete-question-id').value = questionId;
+            document.getElementById('delete-confirm-popup').style.display = 'flex';
+        }
+        
+        // Close confirm popup
+        function closeConfirmPopup() {
+            document.getElementById('delete-confirm-popup').style.display = 'none';
+        }
+        
+        // Confirm delete
+        function confirmDelete() {
+            const type = document.getElementById('delete-type').value;
+            const quizId = document.getElementById('delete-quiz-id').value;
+            const questionId = document.getElementById('delete-question-id').value;
+            
+            if (type === 'quiz') {
+                fetch('/delete_quiz', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quiz_id: quizId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const quizCard = document.getElementById('quiz-card-' + quizId);
+                        if (quizCard) {
+                            quizCard.remove();
+                        }
+                    } else {
+                        alert("Error: " + data.message);
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            } else if (type === 'question') {
+                fetch('/delete_question', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question_id: questionId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const questionTag = document.getElementById('question-' + quizId + '-' + questionId);
+                        if (questionTag) {
+                            questionTag.remove();
+                        }
+                    } else {
+                        alert("Error: " + data.message);
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            }
+            
+            closeConfirmPopup();
+        }
+        
+        // Close popups
+        function closePopup() {
+            document.getElementById('question-popup').style.display = 'none';
+            document.getElementById('edit-quiz-popup').style.display = 'none';
+        }
+        
+        // Save question
+        function saveQuestion() {
+            const quizId = document.getElementById('quiz-id').value;
+            const title = document.getElementById('question-title').value;
+
+            // Get all options
+            const options = [];
+            document.querySelectorAll('.question-option input[type="text"]').forEach(option => {
+                options.push(option.value);
+            });
+
+            // Get the correct answer index
+            const correctAnswer = document.querySelector('input[name="correct-answer"]:checked')?.value;
+
+            if (!title || options.some(opt => !opt) || correctAnswer === undefined) {
+                alert("Please fill in all fields before saving.");
+                return;
+            }
+
+            fetch('/add_question', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    quiz_id: quizId,
+                    title: title,
+                    options: options,
+                    correct_answer: parseInt(correctAnswer)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Question added successfully!");
+                    location.reload();
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(error => console.error("Error:", error));
+            
+            closePopup();
+        }
+
+        </script>
 </body>
 </html>

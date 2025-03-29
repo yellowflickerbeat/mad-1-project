@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Master - Student Management</title>
+    <title>Quiz Master - User Management</title>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -104,27 +104,23 @@
             background: white;
         }
 
-        .student-table {
+        .user-table {
             width: 100%;
             border-collapse: collapse;
             background: white;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
 
-        .student-table th, .student-table td {
+        .user-table th, .user-table td {
             border: 1px solid #ddd;
             padding: 12px;
             text-align: left;
         }
 
-        .student-table th {
+        .user-table th {
             background-color: var(--primary-color);
             color: white;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
         }
 
         .btn {
@@ -135,8 +131,18 @@
             font-size: 14px;
         }
 
-        .btn-edit {
+        .btn-primary {
             background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .btn-success {
+            background-color: #2ecc71;
             color: white;
         }
 
@@ -149,12 +155,96 @@
             background-color: #f39c12;
             color: white;
         }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal.fade {
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal.show {
+            opacity: 1;
+            display: block;
+        }
+
+        .modal-dialog {
+            position: relative;
+            width: 500px;
+            margin: 100px auto;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .btn-close {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 15px;
+        }
+
+        .modal-footer {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
     <nav class="vertical-nav">
         <div>
-            <a href="{{ url_for('admin_dashboard') }}" class="nav-item">📊<span>Users</span></a>
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-item">📊<span>Dashboard</span></a>
             <a href="{{ url_for('admin_quiz') }}" class="nav-item">📝 <span>Quiz Management</span></a>
             <a href="{{ url_for('admin_users') }}" class="nav-item">👥<span>Users</span></a>
             <a href="{{ url_for('stats') }}" class="nav-item">📈 <span>Performance Reports</span></a>
@@ -164,25 +254,20 @@
 
     <main class="main-content">
         <header class="dashboard-header">
-            <h1>Student Management</h1>
+            <h1>User Management</h1>
         </header>
 
         <div class="filter-section">
-            <select class="filter-select">
-                <option>All Students</option>
-                <option>High Performers</option>
-                <option>Low Performers</option>
-            </select>
             <select class="filter-select">
                 <option>Qualification</option>
                 <option>Grade 1-5</option>
                 <option>Grade 5-10</option>
                 <option>Grade 10-12</option>
             </select>
-            <input type="text" class="filter-select" placeholder="Search students...">
+            <input type="text" class="filter-select" placeholder="Search users...">
         </div>
 
-        <table class="student-table">
+        <table class="user-table">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -196,20 +281,110 @@
             <tbody>
                 {% for user in users %}
                 <tr>
-                    <td>{{ user.name }}</td>
+                    <td>{{ user.full_name }}</td>
                     <td>{{ user.email }}</td>
                     <td>{{ user.qualification }}</td>
-                    <td>{{ user.quizzes_taken }}</td>
-                    <td>{{ user.performance }}%</td>
+                    <td>{{ user.quizzes_taken|default('0') }}</td>
+                    <td>{{ user.performance|default('0') }}%</td>
                     <td class="action-buttons">
-                        <button class="btn btn-edit">Edit</button>
-                        <button class="btn btn-delete">Delete</button>
+                        <button class="btn btn-primary assign-btn" 
+                                data-user-id="{{ user.id }}" 
+                                data-user-name="{{ user.full_name }}" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#assignQuizModal">
+                            Assign Quiz
+                        </button>
                         <button class="btn btn-reset">Reset</button>
+                        <button class="btn btn-delete">Delete</button>
                     </td>
                 </tr>
                 {% endfor %}
-            </tbody>            
+            </tbody>
         </table>
     </main>
+
+    <!-- Modal for Assigning Quiz -->
+    <div class="modal fade" id="assignQuizModal" tabindex="-1" aria-labelledby="assignQuizModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assignQuizModalLabel">Assign Quiz</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>User:</strong> <span id="selectedUserName"></span></p>
+                    <input type="hidden" id="selectedUserId">
+
+                    <label for="quizSelect" class="form-label">Select Quiz:</label>
+                    <select id="quizSelect" class="form-select">
+                        {% for quiz in quizzes %}
+                            <option value="{{ quiz.id }}">{{ quiz.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" id="confirmAssign">Assign</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal functionality
+        const modal = document.getElementById('assignQuizModal');
+        const assignButtons = document.querySelectorAll('.assign-btn');
+        const closeButtons = document.querySelectorAll('[data-bs-dismiss="modal"]');
+        let selectedUserId = null;
+
+        // Open modal
+        assignButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                selectedUserId = this.getAttribute('data-user-id');
+                let userName = this.getAttribute('data-user-name');
+                
+                document.getElementById('selectedUserName').textContent = userName;
+                document.getElementById('selectedUserId').value = selectedUserId;
+                
+                modal.classList.add('show');
+            });
+        });
+
+        // Close modal
+        closeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                modal.classList.remove('show');
+            });
+        });
+
+        // Close when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.classList.remove('show');
+            }
+        });
+
+        // Assign quiz via fetch API
+        document.getElementById('confirmAssign').addEventListener('click', function() {
+            let quizId = document.getElementById('quizSelect').value;
+            
+            if (!selectedUserId || !quizId) {
+                alert("Please select a user and a quiz.");
+                return;
+            }
+
+            fetch('/assign_quiz', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: parseInt(selectedUserId), quiz_id: parseInt(quizId) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                modal.classList.remove('show'); // Close modal
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
 </body>
 </html>
