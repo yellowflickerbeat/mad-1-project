@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from models import db, User, Quiz, UserQuizzes, Question, Subject, Chapter
+from routes.stats import stats_bp
 
 def init_admin():
     existing_admin = User.query.filter_by(username='admin1').first()
@@ -26,6 +27,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize the database with this application
 db.init_app(app)
+
+# Register blueprints
+app.register_blueprint(stats_bp)
 
 # Create all tables
 with app.app_context():
@@ -812,6 +816,74 @@ def delete_user():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/summary')
+def summary():
+    if 'user_id' not in session or session.get('role') != 'student':
+        return redirect(url_for('index'))
+    
+    user_id = session['user_id']
+    
+    # Get subject-wise performance
+    subject_performance = []
+    subjects = Subject.query.all()
+    subject_labels = []
+    subject_scores = []
+    
+    for subject in subjects:
+        subject_quizzes = UserQuizzes.query.join(Quiz).join(Chapter).filter(
+            UserQuizzes.user_id == user_id,
+            UserQuizzes.completed == True,
+            Chapter.subject_id == subject.id
+        ).all()
+        
+        if subject_quizzes:
+            avg_score = sum(quiz.score for quiz in subject_quizzes) / len(subject_quizzes)
+            subject_labels.append(subject.name)
+            subject_scores.append(round(avg_score, 2))
+    
+    # Get chapter-wise performance
+    chapter_performance = []
+    chapters = Chapter.query.all()
+    chapter_labels = []
+    chapter_scores = []
+    
+    for chapter in chapters:
+        chapter_quizzes = UserQuizzes.query.join(Quiz).filter(
+            UserQuizzes.user_id == user_id,
+            UserQuizzes.completed == True,
+            Quiz.chapter_id == chapter.id
+        ).all()
+        
+        if chapter_quizzes:
+            avg_score = sum(quiz.score for quiz in chapter_quizzes) / len(chapter_quizzes)
+            chapter_labels.append(chapter.title)
+            chapter_scores.append(round(avg_score, 2))
+    
+    # Get performance over time
+    time_quizzes = UserQuizzes.query.filter_by(
+        user_id=user_id,
+        completed=True
+    ).order_by(UserQuizzes.completed_at).all()
+    
+    time_labels = []
+    time_scores = []
+    cumulative_scores = []
+    total_score = 0
+    
+    for i, quiz in enumerate(time_quizzes):
+        total_score += quiz.score
+        avg_score = total_score / (i + 1)
+        time_labels.append(quiz.completed_at.strftime('%Y-%m-%d'))
+        time_scores.append(round(avg_score, 2))
+    
+    return render_template('summary.html',
+                         subject_labels=subject_labels,
+                         subject_scores=subject_scores,
+                         chapter_labels=chapter_labels,
+                         chapter_scores=chapter_scores,
+                         time_labels=time_labels,
+                         time_scores=time_scores)
 
 if __name__ == '__main__':
     app.run(debug=True)
