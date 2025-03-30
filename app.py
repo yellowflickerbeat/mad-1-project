@@ -1,7 +1,23 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-from models import db, User, Quiz, UserQuizzes, Question
+from models import db, User, Quiz, UserQuizzes, Question, Subject
+
+def init_admin():
+    existing_admin = User.query.filter_by(username='admin1').first()
+    if not existing_admin:
+        admin_password = generate_password_hash('admin')
+        admin_user = User(
+            username='admin1',
+            password=admin_password,
+            role='admin',
+            full_name='Admin User',
+            email='admin@gmail.com',
+            qualification='N/A',
+            date_of_birth=datetime.strptime("2000-01-01", '%Y-%m-%d').date()
+        )
+        db.session.add(admin_user)
+        db.session.commit()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'feb17e6b4dcc472cebac25acd17cd28d'
@@ -10,6 +26,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize the database with this application
 db.init_app(app)
+
+# Create all tables
+with app.app_context():
+    db.create_all()
+    init_admin()
 
 @app.route('/')
 def index():
@@ -64,42 +85,114 @@ def register():
 def student_dashboard():
     if 'user_id' not in session or session.get('role') != 'student':
         return redirect(url_for('index'))
-    return render_template('student_dashboard.html')
+    
+    # Get user information
+    user = User.query.get(session['user_id'])
+    
+    # Get all assigned quizzes
+    user_quizzes = UserQuizzes.query.filter_by(user_id=session['user_id']).all()
+    
+    # Calculate statistics
+    total_quizzes = len(user_quizzes)
+    completed_quizzes = 0  # Since we're not tracking completion anymore
+    pending_quizzes = total_quizzes
+    
+    # Get all assigned quizzes
+    upcoming_quizzes = []
+    for uq in user_quizzes:
+        quiz = Quiz.query.get(uq.quiz_id)
+        if quiz:
+            subject = Subject.query.get(quiz.subject_id)
+            upcoming_quizzes.append({
+                'id': quiz.id,
+                'title': quiz.title,
+                'subject_name': subject.name if subject else 'Unknown Subject',
+                'assigned_at': uq.assigned_at
+            })
+    
+    return render_template('student_dashboard.html',
+                         user=user,
+                         total_quizzes=total_quizzes,
+                         completed_quizzes=completed_quizzes,
+                         pending_quizzes=pending_quizzes,
+                         upcoming_quizzes=upcoming_quizzes)
 
 @app.route('/assign_quiz', methods=['POST'])
 def assign_quiz():
-    data = request.get_json()
-    user_id = data.get('user_id')
-    quiz_id = data.get('quiz_id')
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        quiz_id = data.get('quiz_id')
 
-    if not user_id or not quiz_id:
-        return jsonify({"message": "User ID and Quiz ID are required"}), 400
+        if not user_id or not quiz_id:
+            return jsonify({"message": "User ID and Quiz ID are required"}), 400
 
-    # ✅ Prevent duplicate assignments
-    existing_assignment = UserQuizzes.query.filter_by(user_id=user_id, quiz_id=quiz_id).first()
-    if existing_assignment:
-        return jsonify({"message": "Quiz already assigned to this user!"}), 400
+        # Check if user exists
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"message": f"User with ID {user_id} not found"}), 404
 
-    # ✅ Assign the quiz
-    new_assignment = UserQuizzes(user_id=user_id, quiz_id=quiz_id)
-    db.session.add(new_assignment)
-    db.session.commit()
+        # Check if quiz exists
+        quiz = Quiz.query.get(quiz_id)
+        if not quiz:
+            return jsonify({"message": f"Quiz with ID {quiz_id} not found"}), 404
 
-    return jsonify({"message": f"Quiz {quiz_id} successfully assigned to user {user_id}!"}), 200
+        # ✅ Prevent duplicate assignments
+        existing_assignment = UserQuizzes.query.filter_by(user_id=user_id, quiz_id=quiz_id).first()
+        if existing_assignment:
+            return jsonify({"message": "Quiz already assigned to this user!"}), 400
+        
+        # ✅ Assign the quiz
+        new_assignment = UserQuizzes(
+            user_id=user_id, 
+            quiz_id=quiz_id
+        )
+        db.session.add(new_assignment)
+        db.session.commit()
+
+        return jsonify({"message": f"Quiz {quiz.title} successfully assigned to user {user.full_name}!"}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error in assign_quiz: {str(e)}")  # For debugging
+        return jsonify({"message": f"Error assigning quiz: {str(e)}"}), 500
 
 @app.route('/student_quiz')
 def student_quiz():
     if 'user_id' not in session or session.get('role') != 'student':
         return redirect(url_for('index'))
-    return render_template('student_quiz.html')
+    
+    # Get all assigned quizzes for the current student
+    user_quizzes = UserQuizzes.query.filter_by(user_id=session['user_id']).all()
+    assigned_quizzes = []
+    
+    for uq in user_quizzes:
+        quiz = Quiz.query.get(uq.quiz_id)
+        if quiz:
+            subject = Subject.query.get(quiz.subject_id)
+            question_count = Question.query.filter_by(quiz_id=quiz.id).count()
+            
+            assigned_quizzes.append({
+                'id': quiz.id,
+                'title': quiz.title,
+                'description': quiz.description,
+                'subject_name': subject.name if subject else 'Unknown Subject',
+                'question_count': question_count,
+                'assigned_at': uq.assigned_at
+            })
+    
+    # Get all subjects for the filter dropdown
+    subjects = Subject.query.all()
+    
+    return render_template('student_quiz.html', assigned_quizzes=assigned_quizzes, subjects=subjects)
 
 @app.route('/admin_quiz')
 def admin_quiz():
     if 'user_id' not in session or session.get('role') != 'admin':
         return redirect(url_for('index'))
     
+    subjects = Subject.query.all()
     quizzes = Quiz.query.all()
-    return render_template('admin_quiz.html', quizzes=quizzes)
+    return render_template('admin_quiz.html', subjects=subjects, quizzes=quizzes)
 
 @app.route('/stats')
 def stats():
@@ -119,7 +212,8 @@ def admin_users():
 def admin_dashboard():
     if 'user_id' not in session or session.get('role') != 'admin':
         return redirect(url_for('index'))
-    return render_template('admin_dashboard.html')
+    subjects = Subject.query.all()
+    return render_template('admin_dashboard.html', subjects=subjects)
 
 @app.route('/logout')
 def logout():
@@ -159,20 +253,33 @@ def edit_quiz():
     if 'user_id' not in session or session.get('role') != 'admin':
         return jsonify({"success": False, "message": "Unauthorized"}), 401
 
-    data = request.get_json()
-    quiz_id = data.get('quiz_id')
-    title = data.get('title')
-    description = data.get('description')
-
-    if not all([quiz_id, title]):
-        return jsonify({"success": False, "message": "Missing required fields"}), 400
-
     try:
-        quiz = Quiz.query.get_or_404(quiz_id)
+        data = request.get_json()
+        quiz_id = data.get('quiz_id')
+        title = data.get('title')
+        description = data.get('description')
+
+        if not all([quiz_id, title]):
+            return jsonify({"success": False, "message": "Missing required fields"}), 400
+
+        quiz = Quiz.query.get(quiz_id)
+        if not quiz:
+            return jsonify({"success": False, "message": "Quiz not found"}), 404
+
         quiz.title = title
         quiz.description = description
         db.session.commit()
-        return jsonify({"success": True, "message": "Quiz updated successfully"})
+
+        return jsonify({
+            "success": True,
+            "message": "Quiz updated successfully",
+            "quiz": {
+                "id": quiz.id,
+                "title": quiz.title,
+                "description": quiz.description,
+                "subject_id": quiz.subject_id
+            }
+        })
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "message": str(e)}), 500
@@ -222,24 +329,142 @@ def delete_question():
         db.session.rollback()
         return jsonify({"success": False, "message": str(e)}), 500
 
-def init_admin():
-    existing_admin = User.query.filter_by(username='admin1').first()
-    if not existing_admin:
-        admin_password = generate_password_hash('admin')
-        admin_user = User(
-            username='admin1',
-            password=admin_password,
-            role='admin',
-            full_name='Admin User',
-            email='admin@gmail.com',
-            qualification='N/A',
-            date_of_birth=datetime.strptime("2000-01-01", '%Y-%m-%d').date()
+@app.route('/get_quiz/<int:quiz_id>')
+def get_quiz(quiz_id):
+    if 'user_id' not in session:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+
+    try:
+        quiz = Quiz.query.get_or_404(quiz_id)
+        subject = Subject.query.get(quiz.subject_id)
+        questions = Question.query.filter_by(quiz_id=quiz_id).all()
+        
+        return jsonify({
+            "success": True,
+            "quiz": {
+                "id": quiz.id,
+                "title": quiz.title,
+                "description": quiz.description,
+                "subject_name": subject.name if subject else "Unknown Subject",
+                "subject_id": quiz.subject_id,
+                "question_count": len(questions),
+                "question_ids": [q.id for q in questions],
+                "duration": quiz.duration,
+                "deadline": quiz.deadline.strftime('%Y-%m-%dT%H:%M')
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/create_subject', methods=['POST'])
+def create_subject():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+
+    data = request.get_json()
+    name = data.get('name')
+    description = data.get('description')
+
+    if not name:
+        return jsonify({"success": False, "message": "Subject name is required"}), 400
+
+    try:
+        new_subject = Subject(
+            name=name,
+            description=description
         )
-        db.session.add(admin_user)
+        db.session.add(new_subject)
+        db.session.commit()
+        return jsonify({"success": True, "message": "Subject created successfully"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/create_quiz', methods=['POST'])
+def create_quiz():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+
+    try:
+        data = request.get_json()
+        subject_id = data.get('subject_id')
+        title = data.get('title')
+        description = data.get('description')
+
+        if not all([subject_id, title]):
+            return jsonify({"success": False, "message": "Missing required fields"}), 400
+
+        new_quiz = Quiz(
+            title=title,
+            description=description,
+            subject_id=subject_id
+        )
+        db.session.add(new_quiz)
         db.session.commit()
 
+        return jsonify({
+            "success": True,
+            "message": "Quiz created successfully",
+            "quiz": {
+                "id": new_quiz.id,
+                "title": new_quiz.title,
+                "description": new_quiz.description,
+                "subject_id": new_quiz.subject_id
+            }
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/take_quiz/<int:quiz_id>')
+def take_quiz(quiz_id):
+    if 'user_id' not in session or session.get('role') != 'student':
+        return redirect(url_for('index'))
+    
+    # Check if the quiz is assigned to the student
+    user_quiz = UserQuizzes.query.filter_by(user_id=session['user_id'], quiz_id=quiz_id).first()
+    if not user_quiz:
+        return "Unauthorized", 403
+    
+    # Get quiz details
+    quiz = Quiz.query.get_or_404(quiz_id)
+    subject = Subject.query.get(quiz.subject_id)
+    questions = Question.query.filter_by(quiz_id=quiz_id).all()
+    
+    if not questions:
+        return "No questions available for this quiz", 404
+    
+    return render_template('take_quiz.html',
+                         quiz=quiz,
+                         subject_name=subject.name if subject else "Unknown Subject",
+                         questions=questions,
+                         current_question=1,
+                         total_questions=len(questions))
+
+@app.route('/submit_quiz/<int:quiz_id>', methods=['POST'])
+def submit_quiz(quiz_id):
+    if 'user_id' not in session or session.get('role') != 'student':
+        return redirect(url_for('index'))
+    
+    # Check if the quiz is assigned to the student
+    user_quiz = UserQuizzes.query.filter_by(user_id=session['user_id'], quiz_id=quiz_id).first()
+    if not user_quiz:
+        return "Unauthorized", 403
+    
+    # Get quiz details
+    quiz = Quiz.query.get_or_404(quiz_id)
+    
+    # Get all questions for this quiz
+    questions = Question.query.filter_by(quiz_id=quiz_id).all()
+    
+    # Process answers (but don't store score)
+    for question in questions:
+        answer_key = f"answer_{question.id}"
+        if answer_key in request.form:
+            selected_answer = int(request.form[answer_key])
+            # You can add any answer processing logic here if needed
+    
+    return redirect(url_for('student_dashboard'))
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        init_admin()  # Initialize admin user on app start
     app.run(debug=True)

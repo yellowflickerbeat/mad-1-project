@@ -14,19 +14,33 @@ class User(db.Model):
     qualification = db.Column(db.String(100))
     date_of_birth = db.Column(db.Date)
 
+# Subject Model
+class Subject(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationship with Quiz
+    quizzes = db.relationship('Quiz', backref='subject', lazy=True)
+
 # Quiz Model
 class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
+    title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    
+    # Relationship with Question
+    questions = db.relationship('Question', backref='quiz', lazy=True)
 
 # UserQuizzes Model (Many-to-Many)
 class UserQuizzes(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
-    assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
+    assigned_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
 
 # Question Model
 class Question(db.Model):
@@ -36,6 +50,3 @@ class Question(db.Model):
     options = db.Column(db.JSON, nullable=False)  # Store options as JSON array
     correct_answer = db.Column(db.Integer, nullable=False)  # Index of correct answer in options array
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    # Relationship with Quiz
-    quiz = db.relationship('Quiz', backref=db.backref('questions', lazy=True))
