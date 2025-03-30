@@ -62,20 +62,20 @@
         }
 
         .logout-btn {
-            background-color: var(--logout-color);
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #e74c3c;
             color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
             text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
             margin-top: auto;
-            transition: 0.3s;
         }
 
         .logout-btn:hover {
-            opacity: 0.9;
+            background-color: #c0392b;
         }
 
         .main-content {
@@ -249,7 +249,9 @@
             <a href="{{ url_for('admin_users') }}" class="nav-item">👥<span>Users</span></a>
             <a href="{{ url_for('stats') }}" class="nav-item">📈 <span>Performance Reports</span></a>
         </div>
-        <button class="logout-btn">Logout</button>
+        <div class="sidebar-footer">
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+        </div>
     </nav>
 
     <main class="main-content">
@@ -273,7 +275,6 @@
                     <th>Name</th>
                     <th>Email</th>
                     <th>Qualification</th>
-                    <th>Quizzes</th>
                     <th>Performance</th>
                     <th>Actions</th>
                 </tr>
@@ -284,8 +285,13 @@
                     <td>{{ user.full_name }}</td>
                     <td>{{ user.email }}</td>
                     <td>{{ user.qualification }}</td>
-                    <td>{{ user.quizzes_taken|default('0') }}</td>
-                    <td>{{ user.performance|default('0') }}%</td>
+                    <td class="performance-cell">
+                        {% if user.role == 'student' %}
+                            {{ user_performance.get(user.id, 0) }}%
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
                     <td class="action-buttons">
                         <button class="btn btn-primary assign-btn" 
                                 data-user-id="{{ user.id }}" 
@@ -294,8 +300,12 @@
                                 data-bs-target="#assignQuizModal">
                             Assign Quiz
                         </button>
-                        <button class="btn btn-reset">Reset</button>
-                        <button class="btn btn-delete">Delete</button>
+                        <button class="btn btn-delete delete-btn" 
+                                data-user-id="{{ user.id }}"
+                                data-user-name="{{ user.full_name }}"
+                                onclick="confirmDelete(this)">
+                            Delete
+                        </button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -402,6 +412,37 @@
                 alert('An error occurred while assigning the quiz. Please check the console for details.');
             });
         });
+
+        // Delete user functionality
+        function confirmDelete(button) {
+            const userId = button.getAttribute('data-user-id');
+            const userName = button.getAttribute('data-user-name');
+            
+            if (confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`)) {
+                fetch('/delete_user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: parseInt(userId)
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('User deleted successfully');
+                        location.reload(); // Refresh the page to show updated list
+                    } else {
+                        alert(data.message || 'Failed to delete user');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the user');
+                });
+            }
+        }
     </script>
 </body>
 </html>

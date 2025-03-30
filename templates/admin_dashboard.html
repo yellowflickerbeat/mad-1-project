@@ -3,276 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Master - Admin Dashboard</title>
+    <title>Admin Dashboard - Quizzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --light-color: #ecf0f1;
-            --background-color: #f4f4f6;
-            --text-color: #333;
-            --border-radius: 8px;
-            --logout-color: #e74c3c;
-            --edit-color: #2ecc71;
-            --delete-color: #e74c3c;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
-
-        body {
-            background-color: var(--background-color);
-            color: var(--text-color);
+        .admin-dashboard {
             display: flex;
+            min-height: 100vh;
         }
 
-        .new-dropdown {
-            position: relative;
-        }
-
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: white;
-            min-width: 160px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-            z-index: 1;
-            right: 0;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-        }
-
-        .dropdown-content button {
-            color: black;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-            background: white;
-            border: none;
-            width: 100%;
-            text-align: left;
-            cursor: pointer;
-        }
-
-        .dropdown-content button:hover {
-            background-color: var(--light-color);
-        }
-
-        .new-dropdown:hover .dropdown-content {
-            display: block;
-        }
-
-        .add-btn {
-            background-color: var(--secondary-color);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: 0.3s;
-            font-size: 18px;
-            float: right;
-        }
-
-        .add-btn:hover {
-            background-color: #2980b9;
-        }
-
-        .vertical-nav {
+        .sidebar {
             width: 250px;
-            background-color: var(--primary-color);
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            padding: 20px;
-            transition: 0.3s;
         }
 
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 15px;
+        .sidebar-header h3 {
+            margin: 0;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-nav a {
             color: white;
             text-decoration: none;
-            font-size: 16px;
-            border-radius: var(--border-radius);
-            transition: background 0.3s;
+            padding: 10px;
+            display: block;
+            border-radius: 5px;
+            transition: background-color 0.3s;
         }
 
-        .nav-item:hover {
-            background-color: var(--secondary-color);
+        .sidebar-nav li.active a,
+        .sidebar-nav a:hover {
+            background-color: #34495e;
         }
 
-        .nav-item span {
-            margin-left: 10px;
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid #34495e;
         }
 
         .logout-btn {
-            background-color: var(--logout-color);
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #e74c3c;
             color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
             text-align: center;
-            margin-top: auto;
-            transition: 0.3s;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #c0392b;
         }
 
         .main-content {
-            margin-left: 250px;
-            width: calc(100% - 250px);
-            padding: 40px;
+            flex: 1;
+            padding: 20px;
+            background-color: #f5f6fa;
         }
 
-        .dashboard-header {
+        .content-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
-            gap: 20px;
         }
 
-        .search-container {
-            display: flex;
-            align-items: center;
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            width: 250px;
-        }
-
-        .search-container input {
+        .add-subject-btn {
+            padding: 10px 20px;
+            background-color: #2ecc71;
+            color: white;
             border: none;
-            outline: none;
-            margin-left: 10px;
-            width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
 
-        .subjects-grid {
+        .add-subject-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .subjects-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
         }
 
         .subject-card {
-            background: white;
-            border-radius: var(--border-radius);
+            background-color: white;
+            border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .subject-header {
             display: flex;
-            flex-direction: column;
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .subject-name {
-            font-size: 1.5em;
-            margin-bottom: 5px;
-        }
-
-        .subject-description {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .subject-actions {
-            position: absolute;
-            top: 0;
-            right: 0;
-            display: flex;
-            gap: 8px;
-        }
-
-        .subject-actions button {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 4px;
-            transition: all 0.2s;
-            width: 40px;
-            height: 40px;
-            display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
+            margin-bottom: 20px;
         }
 
-        .subject-actions button:hover {
-            background-color: rgba(0, 0, 0, 0.1);
-            transform: scale(1.1);
+        .add-chapter-btn {
+            padding: 8px 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
 
-        .quizzes-list {
-            margin-top: 15px;
+        .add-chapter-btn:hover {
+            background-color: #2980b9;
         }
 
-        .quiz-item {
-            background: #f5f5f5;
+        .chapters-container {
+            display: grid;
+            gap: 15px;
+        }
+
+        .chapter-card {
+            background-color: #f8f9fa;
+            border-radius: 8px;
             padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            position: relative;
+            border: 1px solid #e9ecef;
+        }
+
+        .chapter-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 10px;
         }
 
-        .quiz-info {
-            flex: 1;
-            margin-right: 15px;
-        }
-
-        .quiz-title {
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-
-        .quiz-actions {
+        .chapter-actions {
             display: flex;
-            gap: 8px;
+            gap: 10px;
         }
 
-        .quiz-actions button {
-            padding: 6px 12px;
+        .edit-btn, .delete-btn {
+            padding: 5px 10px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
-            color: white;
+            transition: background-color 0.3s;
         }
 
         .edit-btn {
-            background-color: #2ecc71;
+            background-color: #f1c40f;
+            color: #2c3e50;
         }
 
         .delete-btn {
             background-color: #e74c3c;
+            color: white;
         }
 
-        .quiz-actions button:hover {
-            opacity: 0.9;
-        }
-
-        .no-quizzes, .no-subjects {
+        .chapter-description {
             color: #666;
-            font-style: italic;
-            text-align: center;
-            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .quizzes-container {
+            margin-top: 15px;
+        }
+
+        .quiz-item {
+            background-color: white;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .quiz-info h6 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+        }
+
+        .quiz-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .quiz-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .view-btn {
+            padding: 5px 10px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .view-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .add-quiz-btn {
+            width: 100%;
+            padding: 8px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        .add-quiz-btn:hover {
+            background-color: #27ae60;
         }
 
         .popup {
@@ -282,17 +246,19 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
         }
 
         .popup-content {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
+            position: relative;
+            background-color: white;
+            margin: 50px auto;
+            padding: 20px;
             width: 90%;
             max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .form-group {
@@ -302,148 +268,174 @@
         .form-group label {
             display: block;
             margin-bottom: 5px;
+            color: #2c3e50;
         }
 
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
+        .form-control {
             width: 100%;
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
 
-        .form-actions {
+        .popup-actions {
             display: flex;
-            gap: 10px;
             justify-content: flex-end;
+            gap: 10px;
             margin-top: 20px;
         }
 
-        .btn-primary,
-        .btn-secondary,
-        .btn-danger {
+        .popup-cancel, .popup-submit {
             padding: 8px 16px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
 
-        .btn-primary {
-            background: #007bff;
+        .popup-cancel {
+            background-color: #95a5a6;
             color: white;
         }
 
-        .btn-secondary {
-            background: #6c757d;
+        .popup-submit {
+            background-color: #2ecc71;
             color: white;
         }
 
-        .btn-danger {
-            background: #dc3545;
-            color: white;
+        .popup-cancel:hover {
+            background-color: #7f8c8d;
+        }
+
+        .popup-submit:hover {
+            background-color: #27ae60;
         }
     </style>
 </head>
 <body>
-    <nav class="vertical-nav">
-        <div>
-            <a href="{{ url_for('admin_dashboard') }}" class="nav-item">📊<span>Dashboard</span></a>
-            <a href="{{ url_for('admin_quiz') }}" class="nav-item">📝 <span>Quiz Management</span></a>
-            <a href="{{ url_for('admin_users') }}" class="nav-item">👥<span>Users</span></a>
-            <a href="{{ url_for('stats') }}" class="nav-item">📈 <span>Performance Reports</span></a>
+    <div class="admin-dashboard">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3>Quizzer</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ url_for('admin_users') }}">Users</a></li>
+                    <li><a href="{{ url_for('admin_quiz') }}">Quizzes</a></li>
+                    <li><a href="{{ url_for('admin_quiz_results') }}">Quiz Results</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
         </div>
-        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
-    </nav>
 
-    <main class="main-content">
-        <header class="dashboard-header">
-            <h2>Welcome, Admin User</h2>
-            <div class="search-container">
-                🔍 <input type="text" id="searchInput" placeholder="Search subjects, chapters, users...">
-            </div>
-            <div class="new-dropdown">
-                <button class="add-btn">+ New</button>
-                <div class="dropdown-content">
-                    <button onclick="openAddSubjectPopup()">Add Subject</button>
-                    <button onclick="openAssignQuizPopup()">Assign Quiz</button>
-                </div>
-            </div>
-        </header>
-
-        <div class="dashboard-content">
-            <div class="dashboard-header">
-                <h1>Admin Dashboard</h1>
-                <div class="dashboard-actions">
-                    <button onclick="openAddSubjectPopup()" class="btn-primary">Add Subject</button>
-                    <button onclick="openAddQuizPopup()" class="btn-primary">Add Quiz</button>
-                </div>
+        <div class="main-content">
+            <div class="content-header">
+                <h2>Dashboard</h2>
+                <button class="add-subject-btn" onclick="openAddSubjectPopup()">+ Add Subject</button>
             </div>
 
-            <div class="subjects-grid">
+            <div class="subjects-container">
                 {% for subject in subjects %}
                 <div class="subject-card">
                     <div class="subject-header">
-                        <h2 class="subject-name">{{ subject.name }}</h2>
-                        <div class="subject-actions">
-                            <button onclick="editSubject({{ subject.id }})" title="Edit Subject">✏️</button>
-                            <button onclick="deleteSubject({{ subject.id }})" title="Delete Subject">🗑️</button>
-                        </div>
-                        <p class="subject-description">{{ subject.description }}</p>
+                        <h3>{{ subject.name }}</h3>
+                        <button class="add-chapter-btn" onclick="openAddChapterPopup({{ subject.id }})">+ Add Chapter</button>
                     </div>
-                    <div class="quizzes-list">
-                        <h3>Quizzes</h3>
-                        {% for quiz in subject.quizzes %}
-                        <div class="quiz-item">
-                            <div class="quiz-info">
-                                <h4 class="quiz-title">{{ quiz.title }}</h4>
+                    
+                    <div class="chapters-container">
+                        {% for chapter in subject.chapters %}
+                        <div class="chapter-card">
+                            <div class="chapter-header">
+                                <h4>{{ chapter.title }}</h4>
+                                <div class="chapter-actions">
+                                    <button class="edit-btn" onclick="editChapter({{ chapter.id }})">Edit</button>
+                                    <button class="delete-btn" onclick="deleteChapter({{ chapter.id }})">Delete</button>
+                                </div>
                             </div>
-                            <div class="quiz-actions">
-                                <button class="edit-btn" onclick="editQuiz({{ quiz.id }})">Edit</button>
-                                <button class="delete-btn" onclick="confirmDeleteQuiz({{ quiz.id }})">Delete</button>
+                            <p class="chapter-description">{{ chapter.description }}</p>
+                            
+                            <div class="quizzes-container">
+                                <h5>Quizzes</h5>
+                                {% for quiz in chapter.quizzes %}
+                                <div class="quiz-item">
+                                    <div class="quiz-info">
+                                        <h6>{{ quiz.title }}</h6>
+                                        <p>{{ quiz.description }}</p>
+                                        <div class="quiz-meta">
+                                            <span>Duration: {{ quiz.duration }} minutes</span>
+                                        </div>
+                                    </div>
+                                    <div class="quiz-actions">
+                                        <a href="{{ url_for('admin_quiz', chapter_id=chapter.id) }}" class="view-btn">View/Edit</a>
+                                        <button class="delete-btn" onclick="deleteQuiz({{ quiz.id }})">Delete</button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                <button class="add-quiz-btn" onclick="openAddQuizPopup({{ chapter.id }})">+ Add Quiz</button>
                             </div>
                         </div>
-                        {% else %}
-                        <p class="no-quizzes">No quizzes available</p>
                         {% endfor %}
                     </div>
                 </div>
-                {% else %}
-                <p class="no-subjects">No subjects available. Create a subject to get started!</p>
                 {% endfor %}
             </div>
         </div>
-    </main>
+    </div>
 
     <!-- Add Subject Popup -->
-    <div id="newSubjectPopup" class="popup">
+    <div id="add-subject-popup" class="popup">
         <div class="popup-content">
-            <h2>Create New Subject</h2>
-            <form id="newSubjectForm">
+            <h3>Add New Subject</h3>
+            <form id="addSubjectForm">
                 <div class="form-group">
                     <label for="subjectName">Subject Name:</label>
-                    <input type="text" id="subjectName" name="name" required>
+                    <input type="text" id="subjectName" name="name" class="form-control" required>
+                </div>
+                <div class="popup-actions">
+                    <button type="button" class="popup-cancel" onclick="closePopup('add-subject-popup')">Cancel</button>
+                    <button type="submit" class="popup-submit">Add Subject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Chapter Popup -->
+    <div id="add-chapter-popup" class="popup">
+        <div class="popup-content">
+            <h3>Add New Chapter</h3>
+            <form id="addChapterForm">
+                <input type="hidden" id="chapterSubjectId" name="subject_id">
+                <div class="form-group">
+                    <label for="chapterTitle">Chapter Title:</label>
+                    <input type="text" id="chapterTitle" name="title" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label for="subjectDescription">Description:</label>
-                    <textarea id="subjectDescription" name="description"></textarea>
+                    <label for="chapterDescription">Description:</label>
+                    <textarea id="chapterDescription" name="description" class="form-control"></textarea>
                 </div>
-                <div class="form-actions">
-                    <button type="submit">Create Subject</button>
-                    <button type="button" onclick="closePopup('newSubjectPopup')">Cancel</button>
+                <div class="form-group">
+                    <label for="chapterOrder">Order:</label>
+                    <input type="number" id="chapterOrder" name="order" class="form-control" min="1" required>
+                </div>
+                <div class="popup-actions">
+                    <button type="button" class="popup-cancel" onclick="closePopup('add-chapter-popup')">Cancel</button>
+                    <button type="submit" class="popup-submit">Add Chapter</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Add Quiz Popup -->
-    <div id="newQuizPopup" class="popup">
+    <div id="add-quiz-popup" class="popup">
         <div class="popup-content">
-            <h2>Create New Quiz</h2>
+            <h3>Add New Quiz</h3>
             <form id="newQuizForm">
                 <div class="form-group">
-                    <label for="subject">Subject:</label>
-                    <select id="subject" name="subject_id" required>
+                    <label for="subject_id">Subject:</label>
+                    <select id="subject_id" name="subject_id" class="form-control" required onchange="loadChapters()">
                         <option value="">Select a subject</option>
                         {% for subject in subjects %}
                         <option value="{{ subject.id }}">{{ subject.name }}</option>
@@ -451,518 +443,78 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="quizTitle">Quiz Title:</label>
-                    <input type="text" id="quizTitle" name="title" required>
+                    <label for="chapter_id">Chapter:</label>
+                    <select id="chapter_id" name="chapter_id" class="form-control" required>
+                        <option value="">Select a chapter</option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label for="quizDescription">Description:</label>
-                    <textarea id="quizDescription" name="description"></textarea>
+                    <label for="title">Title:</label>
+                    <input type="text" id="title" name="title" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label for="quizDeadline">Deadline:</label>
-                    <input type="datetime-local" id="quizDeadline" name="deadline" required>
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" class="form-control"></textarea>
                 </div>
-                <div class="form-actions">
-                    <button type="submit">Create Quiz</button>
-                    <button type="button" onclick="closePopup('newQuizPopup')">Cancel</button>
+                <div class="form-group">
+                    <label for="duration">Duration (minutes):</label>
+                    <input type="number" id="duration" name="duration" class="form-control" min="1" required>
+                </div>
+                <div class="popup-actions">
+                    <button type="button" class="popup-cancel" onclick="closePopup('add-quiz-popup')">Cancel</button>
+                    <button type="submit" class="popup-submit">Add Quiz</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Edit Subject Popup -->
-    <div id="edit-subject-popup" class="popup">
-        <div class="popup-content">
-            <h3>Edit Subject</h3>
-            <input type="text" id="editSubjectName" placeholder="Subject Name" readonly>
-            <textarea id="editSubjectDescription" placeholder="Subject Description"></textarea>
-            <div class="popup-actions">
-                <button class="popup-cancel" onclick="closePopup('edit-subject-popup')">Cancel</button>
-                <button class="popup-save" onclick="updateSubject()">Save</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Chapter Popup -->
-    <div id="chapter-popup" class="popup">
-        <div class="popup-content">
-            <h3>Add New Chapter</h3>
-            <input type="hidden" id="chapterSubjectId">
-            <input type="text" id="chapterName" placeholder="Chapter Name">
-            <textarea id="chapterDescription" placeholder="Chapter Description"></textarea>
-            <div class="popup-actions">
-                <button class="popup-cancel" onclick="closePopup('chapter-popup')">Cancel</button>
-                <button class="popup-save" onclick="saveChapter()">Save</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Assign Quiz Popup -->
-    <div id="assign-quiz-popup" class="popup">
-        <div class="popup-content">
-            <h3>Assign Quiz to Users</h3>
-            <select id="quizSelect">
-                <option value="">Select Quiz/Chapter</option>
-                <!-- Options will be dynamically populated -->
-            </select>
-            <select id="userSelect" multiple>
-                <!-- Options will be dynamically populated -->
-            </select>
-            <small>Hold Ctrl (or Cmd on Mac) to select multiple users</small>
-            <div class="popup-actions">
-                <button class="popup-cancel" onclick="closePopup('assign-quiz-popup')">Cancel</button>
-                <button class="popup-save" onclick="assignQuizToUsers()">Assign</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Success Notification -->
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Sample data structure for subjects and chapters
-        let subjects = [
-            {
-                id: 1,
-                name: "Mathematics",
-                description: "Advanced mathematics fundamentals for competitive exams",
-                chapters: [
-                    { id: 1, name: "Algebra", description: "Algebraic equations and formulas" },
-                    { id: 2, name: "Geometry", description: "Shapes, areas and volumes" },
-                    { id: 3, name: "Calculus", description: "Differentiation and integration" }
-                ]
-            }
-        ];
-
-        // Sample users for quiz assignment
-        const users = [
-            { id: 1, name: "John Doe" },
-            { id: 2, name: "Jane Smith" },
-            { id: 3, name: "Robert Johnson" }
-        ];
-
-        // Track quiz assignments
-        let quizAssignments = [];
-
-        // Variable to store the item being edited/deleted
-        let currentItemId = null;
-        let deleteType = null;
-        let currentSubjectId = null;
-
-        // Initialize the dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            renderSubjects();
-            populateQuizSelect();
-            populateUserSelect();
-            setupSearch();
-        });
-
-        // Render all subjects and chapters
-        function renderSubjects() {
-            const subjectsGrid = document.getElementById('subjectsGrid');
-            subjectsGrid.innerHTML = '';
-
-            subjects.forEach(subject => {
-                const subjectCard = document.createElement('div');
-                subjectCard.className = 'subject-card';
-                subjectCard.dataset.id = subject.id;
-                
-                const chaptersList = subject.chapters.map(chapter => {
-                    return `
-                        <div class="chapter-tag" data-id="${chapter.id}">
-                            ${chapter.name}
-                            <span class="chapter-actions">
-                                <button class="edit-btn" onclick="editChapter(${subject.id}, ${chapter.id})">Edit</button>
-                                <button class="delete-btn" onclick="deleteChapter(${subject.id}, ${chapter.id})">Delete</button>
-                            </span>
-                        </div>
-                    `;
-                }).join('');
-
-                // Check if there are any assignments for this subject's chapters
-                const assignedUsers = getAssignedUsersForSubject(subject.id);
-                const userAssignmentHTML = assignedUsers.length > 0 ? `
-                    <div class="user-assignment">
-                        <h4>Assigned Users:</h4>
-                        <div class="users-list">
-                            ${assignedUsers.map(user => `<span class="user-tag">${user}</span>`).join('')}
-                        </div>
-                    </div>
-                ` : '';
-
-                subjectCard.innerHTML = `
-                    <div class="subject-header">
-                        <h3>${subject.name}</h3>
-                        <div class="subject-actions">
-                            <button onclick="editSubject(${subject.id})" title="Edit Subject">✏️</button>
-                            <button onclick="deleteSubject(${subject.id})" title="Delete Subject">🗑️</button>
-                        </div>
-                    </div>
-                    <p>${subject.description}</p>
-                    <div class="chapters-list">
-                        ${chaptersList}
-                    </div>
-                    ${userAssignmentHTML}
-                    <button class="add-chapter-btn" onclick="openAddChapterPopup(${subject.id})">+ Add Chapter</button>
-                `;
-                
-                subjectsGrid.appendChild(subjectCard);
-            });
-        }
-
-        // Get assigned users for a subject
-        function getAssignedUsersForSubject(subjectId) {
-            const subjectChapters = subjects.find(s => s.id === subjectId)?.chapters.map(c => c.id) || [];
-            const relevantAssignments = quizAssignments.filter(a => 
-                subjectChapters.includes(a.quizId)
-            );
-            
-            // Extract unique user names
-            const userIds = new Set(relevantAssignments.flatMap(a => a.userIds));
-            return Array.from(userIds).map(id => {
-                const user = users.find(u => u.id === id);
-                return user ? user.name : 'Unknown User';
-            });
-        }
-
-        // Open add subject popup
         function openAddSubjectPopup() {
-            document.getElementById('newSubjectPopup').style.display = 'flex';
+            document.getElementById('add-subject-popup').style.display = 'block';
         }
 
-        // Open add chapter popup
         function openAddChapterPopup(subjectId) {
-            currentSubjectId = subjectId;
             document.getElementById('chapterSubjectId').value = subjectId;
-            document.getElementById('chapter-popup').style.display = 'flex';
+            document.getElementById('add-chapter-popup').style.display = 'block';
         }
 
-        // Save new subject
-        function saveSubject() {
-            const name = document.getElementById('subjectName').value.trim();
-            const description = document.getElementById('subjectDescription').value.trim();
-            
-            if (!name) {
-                alert('Subject name is required');
-                return;
-            }
-            
-            // Generate a new ID (in a real app, this would come from the backend)
-            const newId = subjects.length > 0 ? Math.max(...subjects.map(s => s.id)) + 1 : 1;
-            
-            subjects.push({
-                id: newId,
-                name: name,
-                description: description,
-                chapters: []
-            });
-            
-            renderSubjects();
-            closePopup('newSubjectPopup');
-            document.getElementById('subjectName').value = '';
-            document.getElementById('subjectDescription').value = '';
-            showNotification('Subject added successfully');
+        function openAddQuizPopup(chapterId) {
+            document.getElementById('quizChapterId').value = chapterId;
+            document.getElementById('add-quiz-popup').style.display = 'block';
         }
 
-        // Save new chapter
-        function saveChapter() {
-            const subjectId = parseInt(document.getElementById('chapterSubjectId').value);
-            const name = document.getElementById('chapterName').value.trim();
-            const description = document.getElementById('chapterDescription').value.trim();
-            
-            if (!name) {
-                alert('Chapter name is required');
-                return;
-            }
-            
-            const subjectIndex = subjects.findIndex(s => s.id === subjectId);
-            if (subjectIndex === -1) {
-                alert('Subject not found');
-                return;
-            }
-            
-            // Generate a new ID for the chapter
-            const newId = subjects[subjectIndex].chapters.length > 0 
-                ? Math.max(...subjects[subjectIndex].chapters.map(c => c.id)) + 1 
-                : 1;
-            
-            subjects[subjectIndex].chapters.push({
-                id: newId,
-                name: name,
-                description: description
-            });
-            
-            renderSubjects();
-            closePopup('chapter-popup');
-            document.getElementById('chapterName').value = '';
-            document.getElementById('chapterDescription').value = '';
-            showNotification('Chapter added successfully');
-        }
-
-        // Edit subject
-        function editSubject(subjectId) {
-            const subject = subjects.find(s => s.id === subjectId);
-            if (!subject) return;
-            
-            currentItemId = subjectId;
-            document.getElementById('editSubjectName').value = subject.name;
-            document.getElementById('editSubjectDescription').value = subject.description;
-            document.getElementById('edit-subject-popup').style.display = 'flex';
-        }
-
-        // Update subject
-        function updateSubject() {
-            const description = document.getElementById('editSubjectDescription').value.trim();
-            
-            const subjectIndex = subjects.findIndex(s => s.id === currentItemId);
-            if (subjectIndex === -1) {
-                alert('Subject not found');
-                return;
-            }
-            
-            subjects[subjectIndex].description = description;
-            
-            renderSubjects();
-            closePopup('edit-subject-popup');
-            showNotification('Subject updated successfully');
-        }
-
-        // Delete subject (prompt confirmation)
-        function deleteSubject(subjectId) {
-            currentItemId = subjectId;
-            deleteType = 'subject';
-            document.getElementById('confirmation-message').textContent = 
-                'Are you sure you want to delete this subject? All chapters will also be deleted.';
-            document.getElementById('confirmation-dialog').style.display = 'block';
-        }
-
-        // Edit chapter - redirect to quiz editor
-        function editChapter(subjectId, chapterId) {
-            // This would redirect to the quiz editor page
-            window.location.href = '/admin_quiz.html?subjectId=' + subjectId + '&chapterId=' + chapterId;
-        }
-
-        // Delete chapter (prompt confirmation)
-        function deleteChapter(subjectId, chapterId) {
-            currentItemId = chapterId;
-            currentSubjectId = subjectId;
-            deleteType = 'chapter';
-            document.getElementById('confirmation-message').textContent = 
-                'Are you sure you want to delete this chapter?';
-            document.getElementById('confirmation-dialog').style.display = 'block';
-        }
-
-        // Confirm delete action
-        function confirmDelete() {
-            if (deleteType === 'subject') {
-                // Filter out the subject being deleted
-                subjects = subjects.filter(s => s.id !== currentItemId);
-                showNotification('Subject deleted successfully');
-            } else if (deleteType === 'chapter') {
-                // Find the subject and filter out the chapter
-                const subjectIndex = subjects.findIndex(s => s.id === currentSubjectId);
-                if (subjectIndex !== -1) {
-                    subjects[subjectIndex].chapters = subjects[subjectIndex].chapters.filter(c => c.id !== currentItemId);
-                    showNotification('Chapter deleted successfully');
-                }
-            }
-            
-            renderSubjects();
-            document.getElementById('confirmation-dialog').style.display = 'none';
-        }
-
-        // Cancel delete action
-        function cancelDelete() {
-            document.getElementById('confirmation-dialog').style.display = 'none';
-        }
-
-        // Open assign quiz popup
-        function openAssignQuizPopup() {
-            document.getElementById('assign-quiz-popup').style.display = 'flex';
-        }
-
-        // Populate quiz select dropdown
-        function populateQuizSelect() {
-            const quizSelect = document.getElementById('quizSelect');
-            quizSelect.innerHTML = '<option value="">Select Quiz/Chapter</option>';
-            
-            subjects.forEach(subject => {
-                const optgroup = document.createElement('optgroup');
-                optgroup.label = subject.name;
-                
-                subject.chapters.forEach(chapter => {
-                    const option = document.createElement('option');
-                    option.value = chapter.id;
-                    option.textContent = chapter.name;
-                    optgroup.appendChild(option);
-                });
-                
-                quizSelect.appendChild(optgroup);
-            });
-        }
-
-        // Populate user select dropdown
-        function populateUserSelect() {
-            const userSelect = document.getElementById('userSelect');
-            userSelect.innerHTML = '';
-            
-            users.forEach(user => {
-                const option = document.createElement('option');
-                option.value = user.id;
-                option.textContent = user.name;
-                userSelect.appendChild(option);
-            });
-        }
-
-        // Assign quiz to users
-        function assignQuizToUsers() {
-            const quizId = parseInt(document.getElementById('quizSelect').value);
-            const userSelect = document.getElementById('userSelect');
-            const selectedUsers = Array.from(userSelect.selectedOptions).map(option => parseInt(option.value));
-            
-            if (!quizId || selectedUsers.length === 0) {
-                alert('Please select a quiz and at least one user');
-                return;
-            }
-            
-            // Add to assignments
-            quizAssignments.push({
-                quizId: quizId,
-                userIds: selectedUsers
-            });
-            
-            renderSubjects();
-            closePopup('assign-quiz-popup');
-            showNotification('Quiz assigned successfully');
-        }
-
-        // Close popup
         function closePopup(popupId) {
             document.getElementById(popupId).style.display = 'none';
         }
 
-        // Show notification
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
+        // Close popup when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('popup')) {
+                event.target.style.display = 'none';
+            }
         }
 
-        // Setup search functionality
-        function setupSearch() {
-            const searchInput = document.getElementById('searchInput');
-            
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                
-                // If search term is empty, show all subjects
-                if (!searchTerm) {
-                    renderSubjects();
-                    return;
-                }
-                
-                // Filter subjects based on name, description or chapter names
-                const filteredSubjects = subjects.map(subject => {
-                    // Check if subject matches
-                    const subjectMatches = 
-                        subject.name.toLowerCase().includes(searchTerm) || 
-                        subject.description.toLowerCase().includes(searchTerm);
-                    
-                    // Filter chapters
-                    const matchingChapters = subject.chapters.filter(chapter => 
-                        chapter.name.toLowerCase().includes(searchTerm) ||
-                        chapter.description.toLowerCase().includes(searchTerm)
-                    );
-                    
-                    // If subject matches or has matching chapters, include it
-                    if (subjectMatches || matchingChapters.length > 0) {
-                        return {
-                            ...subject,
-                            chapters: matchingChapters
-                        };
-                    }
-                    
-                    return null;
-                }).filter(subject => subject !== null);
-                
-                // Also check users
-                const matchingUserIds = users
-                    .filter(user => user.name.toLowerCase().includes(searchTerm))
-                    .map(user => user.id);
-                
-                // Find subjects with chapters assigned to matching users
-                if (matchingUserIds.length > 0) {
-                    const subjectsWithMatchingUsers = subjects.filter(subject => {
-                        const subjectChapterIds = subject.chapters.map(c => c.id);
-                        return quizAssignments.some(assignment => 
-                            subjectChapterIds.includes(assignment.quizId) && 
-                            assignment.userIds.some(userId => matchingUserIds.includes(userId))
-                        );
-                    });
-                    
-                    // Add these subjects to filtered subjects (if not already included)
-                    subjectsWithMatchingUsers.forEach(subject => {
-                        if (!filteredSubjects.some(s => s.id === subject.id)) {
-                            filteredSubjects.push(subject);
-                        }
-                    });
-                }
-                
-                // Render the filtered subjects
-                const subjectsGrid = document.getElementById('subjectsGrid');
-                subjectsGrid.innerHTML = '';
-                
-                if (filteredSubjects.length === 0) {
-                    subjectsGrid.innerHTML = '<p>No results found.</p>';
-                    return;
-                }
-                
-                // Use the same rendering logic with filtered subjects
-                subjects = filteredSubjects;
-                renderSubjects();
-                subjects = JSON.parse(JSON.stringify(window.subjects || [])); // Reset to original subjects
-            });
-        }
-
-        // Initialize backup of subjects for search reset
-        window.subjects = JSON.parse(JSON.stringify(subjects));
-
-        // Logout function
-        function logout() {
-            // In a real application, this would clear session data
-            alert('Logging out...');
-            window.location.href = '/login.html';
-        }
-
-        function openAddQuizPopup() {
-            document.getElementById('newQuizPopup').style.display = 'flex';
-        }
-
-        // Add subject form submission handler
-        document.getElementById('newSubjectForm').addEventListener('submit', function(e) {
+        // Handle form submissions
+        document.getElementById('addSubjectForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const formData = {
-                name: document.getElementById('subjectName').value,
-                description: document.getElementById('subjectDescription').value
-            };
-
+            const formData = new FormData(this);
+            
             fetch('/create_subject', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    name: formData.get('name')
+                })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    closePopup('newSubjectPopup');
                     location.reload();
                 } else {
-                    alert('Error: ' + data.message);
+                    alert(data.message);
                 }
             })
             .catch(error => {
@@ -971,30 +523,61 @@
             });
         });
 
-        // Add quiz form submission handler
+        document.getElementById('addChapterForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch('/create_chapter', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    subject_id: parseInt(formData.get('subject_id')),
+                    title: formData.get('title'),
+                    description: formData.get('description'),
+                    order: parseInt(formData.get('order'))
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while creating the chapter.');
+            });
+        });
+
         document.getElementById('newQuizForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const formData = {
-                subject_id: document.getElementById('subject').value,
-                title: document.getElementById('quizTitle').value,
-                description: document.getElementById('quizDescription').value,
-                deadline: document.getElementById('quizDeadline').value
+            const formData = new FormData(this);
+            
+            const quizData = {
+                subject_id: formData.get('subject_id'),
+                chapter_id: formData.get('chapter_id'),
+                title: formData.get('title'),
+                description: formData.get('description'),
+                duration: formData.get('duration')
             };
-
+            
             fetch('/create_quiz', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(quizData)
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    closePopup('newQuizPopup');
                     location.reload();
                 } else {
-                    alert('Error: ' + data.message);
+                    alert(data.message);
                 }
             })
             .catch(error => {
@@ -1003,11 +586,31 @@
             });
         });
 
-        function editQuiz(quizId) {
-            window.location.href = `/admin_quiz/${quizId}`;
+        function editChapter(chapterId) {
+            // Implement chapter editing
         }
 
-        function confirmDeleteQuiz(quizId) {
+        function deleteChapter(chapterId) {
+            if (confirm('Are you sure you want to delete this chapter?')) {
+                fetch(`/delete_chapter/${chapterId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the chapter.');
+                });
+            }
+        }
+
+        function deleteQuiz(quizId) {
             if (confirm('Are you sure you want to delete this quiz?')) {
                 fetch(`/delete_quiz/${quizId}`, {
                     method: 'DELETE'
@@ -1017,7 +620,7 @@
                     if (data.success) {
                         location.reload();
                     } else {
-                        alert('Error: ' + data.message);
+                        alert(data.message);
                     }
                 })
                 .catch(error => {

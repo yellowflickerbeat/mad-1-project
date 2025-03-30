@@ -108,70 +108,93 @@
 
         .quizzes-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
         }
 
         .quiz-card {
-            background: white;
-            border-radius: var(--border-radius);
+            background-color: white;
+            border-radius: 10px;
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             position: relative;
-            min-height: 300px;
+            z-index: 1;
         }
 
-        .quiz-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .quiz-card:hover {
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .quiz-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
             margin-bottom: 15px;
         }
 
-        .quiz-actions {
-            position: absolute;
-            top: 0;
-            right: 0;
-            display: flex;
-            gap: 8px;
+        .quiz-subject {
+            color: #7f8c8d;
+            margin-bottom: 10px;
         }
 
-        .quiz-actions button {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 4px;
-            transition: all 0.2s;
-            width: 40px;
-            height: 40px;
+        .quiz-description {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .quiz-info {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
         }
 
-        .quiz-actions button:hover {
-            background-color: rgba(0, 0, 0, 0.1);
-            transform: scale(1.1);
+        .quiz-meta {
+            display: flex;
+            gap: 20px;
         }
 
-        .edit-btn {
-            background-color: var(--edit-color);
-            color: white;
+        .quiz-info span {
+            background-color: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .quiz-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
             border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
         }
 
-        .delete-btn {
-            background-color: var(--delete-color);
+        .view-btn {
+            background-color: #3498db;
             color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
+        }
+
+        .start-btn {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .view-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .start-btn:hover {
+            background-color: #27ae60;
         }
 
         .questions-list {
@@ -367,15 +390,21 @@
             margin-top: 5px;
         }
 
-        .quiz-description {
-            color: #666;
-            margin: 10px 0;
-            font-size: 14px;
+        .performance-cell {
+            text-align: center;
+            font-weight: 500;
         }
 
-        .quiz-deadline {
-            color: #666;
-            font-size: 14px;
+        .performance-high {
+            color: #2ecc71;
+        }
+
+        .performance-medium {
+            color: #f1c40f;
+        }
+
+        .performance-low {
+            color: #e74c3c;
         }
     </style>
 </head>
@@ -510,25 +539,35 @@
             <h2>Create New Quiz</h2>
             <form id="newQuizForm">
                 <div class="form-group">
-                    <label for="quizSubject">Subject</label>
-                    <select class="form-control" id="quizSubject" required>
-                        <option value="">Select Subject</option>
+                    <label for="subject_id">Subject:</label>
+                    <select id="subject_id" name="subject_id" class="form-control" required onchange="loadChapters()">
+                        <option value="">Select a subject</option>
                         {% for subject in subjects %}
                         <option value="{{ subject.id }}">{{ subject.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="quizTitle">Title</label>
-                    <input type="text" class="form-control" id="quizTitle" required>
+                    <label for="chapter_id">Chapter:</label>
+                    <select id="chapter_id" name="chapter_id" class="form-control" required>
+                        <option value="">Select a chapter</option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label for="quizDescription">Description</label>
-                    <textarea class="form-control" id="quizDescription" rows="3"></textarea>
+                    <label for="title">Title:</label>
+                    <input type="text" id="title" name="title" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="duration">Duration (minutes):</label>
+                    <input type="number" id="duration" name="duration" class="form-control" min="1" required>
                 </div>
                 <div class="popup-actions">
                     <button type="button" class="popup-cancel" onclick="closePopup('add-quiz-popup')">Cancel</button>
-                    <button type="submit" class="popup-save">Create Quiz</button>
+                    <button type="submit" class="popup-submit">Add Quiz</button>
                 </div>
             </form>
         </div>
@@ -758,22 +797,57 @@
             document.getElementById('add-quiz-popup').style.display = 'flex';
         }
 
-        // Save new quiz
+        // Add this function to load chapters when subject is selected
+        function loadChapters() {
+            const subjectId = document.getElementById('subject_id').value;
+            const chapterSelect = document.getElementById('chapter_id');
+            
+            // Clear current options
+            chapterSelect.innerHTML = '<option value="">Select a chapter</option>';
+            
+            if (subjectId) {
+                // Fetch chapters for selected subject
+                fetch(`/get_chapters/${subjectId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            data.chapters.forEach(chapter => {
+                                const option = document.createElement('option');
+                                option.value = chapter.id;
+                                option.textContent = chapter.title;
+                                chapterSelect.appendChild(option);
+                            });
+                        } else {
+                            console.error('Error loading chapters:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error loading chapters');
+                    });
+            }
+        }
+
+        // Update the form submission to include chapter_id
         document.getElementById('newQuizForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const subjectId = document.getElementById('quizSubject').value;
-            const title = document.getElementById('quizTitle').value;
-            const description = document.getElementById('quizDescription').value;
+            const subjectId = document.getElementById('subject_id').value;
+            const chapterId = document.getElementById('chapter_id').value;
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const duration = document.getElementById('duration').value;
 
-            if (!subjectId || !title) {
+            if (!subjectId || !chapterId || !title) {
                 alert('Please fill in all required fields');
                 return;
             }
 
             const quizData = {
                 subject_id: subjectId,
+                chapter_id: chapterId,
                 title: title,
-                description: description
+                description: description,
+                duration: duration
             };
 
             fetch('/create_quiz', {

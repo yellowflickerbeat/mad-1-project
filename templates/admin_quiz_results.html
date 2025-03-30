@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f6;
+            min-height: 100vh;
+            display: flex;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+        .sidebar-header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #34495e;
+            margin-bottom: 20px;
+        }
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            color: #ecf0f1;
+        }
+        .sidebar-nav {
+            list-style: none;
+        }
+        .sidebar-nav li {
+            margin-bottom: 10px;
+        }
+        .sidebar-nav a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .sidebar-nav a:hover {
+            background-color: #34495e;
+        }
+        .sidebar-nav a.active {
+            background-color: #3498db;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            margin-left: 250px;
+        }
+        .results-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .page-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .results-table {
+            width: 100%;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-collapse: collapse;
+        }
+        .results-table th,
+        .results-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .results-table th {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        .results-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        .score-cell {
+            font-weight: bold;
+        }
+        .score-high {
+            color: #2ecc71;
+        }
+        .score-medium {
+            color: #f1c40f;
+        }
+        .score-low {
+            color: #e74c3c;
+        }
+        .view-details {
+            background-color: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .view-details:hover {
+            background-color: #2980b9;
+        }
+        .logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            margin-top: auto;
+            transition: background-color 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Admin Portal</h2>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+            <li><a href="{{ url_for('admin_users') }}">Users</a></li>
+            <li><a href="{{ url_for('admin_quiz') }}">Quizzes</a></li>
+            <li><a href="{{ url_for('admin_quiz_results') }}" class="active">Quiz Results</a></li>
+        </ul>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+    <div class="main-content">
+        <div class="results-container">
+            <h1 class="page-title">Quiz Results</h1>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Quiz</th>
+                        <th>Subject</th>
+                        <th>Completed At</th>
+                        <th>Duration</th>
+                        <th>Score</th>
+                        <th>Accuracy</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in quiz_results %}
+                    <tr>
+                        <td>{{ result.student_name }}</td>
+                        <td>{{ result.quiz_title }}</td>
+                        <td>{{ result.subject_name }}</td>
+                        <td>{{ result.completed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ result.duration }} minutes</td>
+                        <td class="score-cell {% if result.score >= 80 %}high-score{% elif result.score >= 60 %}medium-score{% else %}low-score{% endif %}">
+                            {{ "%.1f"|format(result.score) }}%
+                        </td>
+                        <td>{{ result.correct_answers }}/{{ result.total_questions }}</td>
+                        <td>
+                            <a href="{{ url_for('admin_quiz_result_detail', user_quiz_id=result.user_quiz_id) }}" class="view-details">View Details</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html> 

@@ -77,70 +77,52 @@
             border-radius: 5px;
             border: 1px solid #bdc3c7;
         }
-        .quizzes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+        .quizzes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
-        .quiz-card {
-            background-color: white;
-            border-radius: 10px;
+        .quiz-details {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-            z-index: 1;
-        }
-        .quiz-card:hover {
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-        }
-        .quiz-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-        .quiz-subject {
-            color: #7f8c8d;
-            margin-bottom: 10px;
-        }
-        .quiz-description {
-            color: #34495e;
-            margin-bottom: 15px;
-            font-size: 14px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .quiz-info {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            font-size: 14px;
-            color: #7f8c8d;
+            align-items: center;
+            gap: 30px;
         }
-        .quiz-actions {
+        .quiz-info-item {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            flex-direction: column;
         }
-        .action-btn {
-            padding: 8px 16px;
+        .quiz-info-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .quiz-info-value {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+        .start-again-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
             transition: background-color 0.3s;
+            text-decoration: none;
         }
-        .view-btn {
-            background-color: #3498db;
-            color: white;
-        }
-        .start-btn {
-            background-color: #2ecc71;
-            color: white;
-        }
-        .view-btn:hover {
-            background-color: #2980b9;
-        }
-        .start-btn:hover {
-            background-color: #27ae60;
+        .start-again-btn:hover {
+            background-color: #45a049;
         }
         /* Modal styles */
         .modal {
@@ -188,6 +170,16 @@
             font-weight: bold;
             color: #2c3e50;
         }
+        .quiz-details {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -197,7 +189,7 @@
             <li><a href="{{ url_for('student_dashboard') }}">Dashboard</a></li>
             <li><a href="{{ url_for('student_quiz') }}" class="active">My Quizzes</a></li>
         </ul>
-        <button class="logout-btn">Logout</button>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
     </div>
     
     <div class="main-content">
@@ -212,14 +204,36 @@
             </select>
         </div>
 
-        <div class="quizzes-grid">
+        <div class="quizzes-list">
             {% for quiz in assigned_quizzes %}
-            <div class="quiz-card" data-subject="{{ quiz.subject_name }}">
-                <div class="quiz-title">{{ quiz.title }}</div>
-                <div class="quiz-actions">
-                    <button class="action-btn view-btn" onclick="viewQuiz({{ quiz.id }})">View Details</button>
-                    <button class="action-btn start-btn" onclick="startQuiz({{ quiz.id }})">Start Quiz</button>
+            <div class="quiz-details" data-subject="{{ quiz.subject_name }}">
+                <div class="quiz-info">
+                    <div class="quiz-info-item">
+                        <span class="quiz-info-label">Quiz Name</span>
+                        <span class="quiz-info-value">{{ quiz.title }}</span>
+                    </div>
+                    <div class="quiz-info-item">
+                        <span class="quiz-info-label">Quiz ID</span>
+                        <span class="quiz-info-value">{{ quiz.id }}</span>
+                    </div>
+                    <div class="quiz-info-item">
+                        <span class="quiz-info-label">Subject</span>
+                        <span class="quiz-info-value">{{ quiz.subject_name }}</span>
+                    </div>
+                    <div class="quiz-info-item">
+                        <span class="quiz-info-label">Chapter</span>
+                        <span class="quiz-info-value">{{ quiz.chapter_name }}</span>
+                    </div>
+                    <div class="quiz-info-item">
+                        <span class="quiz-info-label">Questions</span>
+                        <span class="quiz-info-value">{{ quiz.question_count }}</span>
+                    </div>
+                    <div class="quiz-info-item">
+                        <span class="quiz-info-label">Duration</span>
+                        <span class="quiz-info-value">{{ quiz.duration }} minutes</span>
+                    </div>
                 </div>
+                <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="start-again-btn">Start Quiz</a>
             </div>
             {% endfor %}
         </div>
@@ -244,11 +258,11 @@
         // Filter functionality
         document.getElementById('subject-filter').addEventListener('change', function() {
             const selectedSubject = this.value;
-            const quizCards = document.querySelectorAll('.quiz-card');
+            const quizCards = document.querySelectorAll('.quiz-details');
             
             quizCards.forEach(card => {
                 if (selectedSubject === '' || card.dataset.subject === selectedSubject) {
-                    card.style.display = 'block';
+                    card.style.display = 'flex';
                 } else {
                     card.style.display = 'none';
                 }
