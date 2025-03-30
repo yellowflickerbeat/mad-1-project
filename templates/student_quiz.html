@@ -187,9 +187,10 @@
         <div class="sidebar-logo">Quizzer</div>
         <ul class="sidebar-menu">
             <li><a href="{{ url_for('student_dashboard') }}">Dashboard</a></li>
-            <li><a href="{{ url_for('student_quiz') }}" class="active">My Quizzes</a></li>
+            <li class="active"><a href="{{ url_for('student_quiz') }}">My Quizzes</a></li>
+            <li><a href="{{ url_for('summary') }}">Summary</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
         </ul>
-        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
     </div>
     
     <div class="main-content">

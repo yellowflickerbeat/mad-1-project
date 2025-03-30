@@ -175,7 +175,7 @@
                         </td>
                         <td>{{ result.correct_answers }}/{{ result.total_questions }}</td>
                         <td>
-                            <a href="{{ url_for('admin_quiz_result_detail', user_quiz_id=result.user_quiz_id) }}" class="view-details">View Details</a>
+                            <a href="{{ url_for('stats') }}" class="nav-item">📈 <span>Performance Reports</span></a>
                         </td>
                     </tr>
                     {% endfor %}

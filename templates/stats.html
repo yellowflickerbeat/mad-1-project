@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Statistics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .admin-dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header h3 {
+            margin: 0;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            display: block;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar-nav li.active a,
+        .sidebar-nav a:hover {
+            background-color: #34495e;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            background-color: #f5f6fa;
+            overflow-y: auto;
+        }
+
+        .chart-container {
+            width: 60%;
+            height: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: white;
+            position: relative;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin: 20px 0;
+        }
+        .chart-title {
+            text-align: center;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .chart-wrapper {
+            position: relative;
+            height: calc(100% - 50px); /* Subtract title height */
+            width: 100%;
+        }
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3>Admin Panel</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ url_for('admin_quiz') }}">Manage Quizzes</a></li>
+                    <li><a href="{{ url_for('admin_users') }}">Manage Users</a></li>
+                    <li class="active"><a href="{{ url_for('stats') }}">Statistics</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1>Performance Statistics Dashboard</h1>
+
+            <!-- Subject Performance Chart -->
+            <div class="chart-container">
+                <h2 class="chart-title">User Performance Across Subjects</h2>
+                <div class="chart-wrapper">
+                    <canvas id="subjectChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chapter Performance Chart -->
+            <div class="chart-container">
+                <h2 class="chart-title">User Performance Across Chapters</h2>
+                <div class="chart-wrapper">
+                    <canvas id="chapterChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Quiz Performance Chart -->
+            <div class="chart-container">
+                <h2 class="chart-title">User Performance Across Quizzes</h2>
+                <div class="chart-wrapper">
+                    <canvas id="quizChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Quizzes per Subject Chart -->
+            <div class="chart-container">
+                <h2 class="chart-title">Number of Quizzes per Subject</h2>
+                <div class="chart-wrapper">
+                    <canvas id="quizzesPerSubjectChart"></canvas>
+                </div>
+            </div>
+
+            <!-- User Average Score Chart -->
+            <div class="chart-container">
+                <h2 class="chart-title">User Average Scores</h2>
+                <div class="chart-wrapper">
+                    <canvas id="userAverageChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch data from the backend
+        async function fetchData(endpoint) {
+            try {
+                const response = await fetch(endpoint);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                return null;
+            }
+        }
+
+        // Function to create charts with real data
+        async function createCharts() {
+            // Fetch data from backend
+            const subjectData = await fetchData('/api/stats/subject-performance');
+            const chapterData = await fetchData('/api/stats/chapter-performance');
+            const quizData = await fetchData('/api/stats/quiz-performance');
+            const quizzesPerSubjectData = await fetchData('/api/stats/quizzes-per-subject');
+            const userAverageData = await fetchData('/api/stats/user-averages');
+
+            if (!subjectData || !chapterData || !quizData || !quizzesPerSubjectData || !userAverageData) {
+                document.body.innerHTML += '<div class="loading">Error loading data. Please try again later.</div>';
+                return;
+            }
+
+            // Create Subject Performance Chart
+            new Chart(document.getElementById('subjectChart'), {
+                type: 'bar',
+                data: {
+                    labels: subjectData.labels,
+                    datasets: [{
+                        label: 'Average Score',
+                        data: subjectData.data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Create Chapter Performance Chart
+            new Chart(document.getElementById('chapterChart'), {
+                type: 'bar',
+                data: {
+                    labels: chapterData.labels,
+                    datasets: chapterData.datasets.map((dataset, index) => ({
+                        label: dataset.label,
+                        data: dataset.data,
+                        backgroundColor: `rgba(${75 + index * 50}, 192, 192, 0.5)`,
+                        borderColor: `rgba(${75 + index * 50}, 192, 192, 1)`,
+                        borderWidth: 1
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Create Quiz Performance Chart
+            new Chart(document.getElementById('quizChart'), {
+                type: 'bar',
+                data: {
+                    labels: quizData.labels,
+                    datasets: [{
+                        label: 'Quiz Scores',
+                        data: quizData.data,
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Create Quizzes per Subject Chart (Pie Chart)
+            new Chart(document.getElementById('quizzesPerSubjectChart'), {
+                type: 'pie',
+                data: {
+                    labels: quizzesPerSubjectData.labels,
+                    datasets: [{
+                        data: quizzesPerSubjectData.data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.5)',
+                            'rgba(54, 162, 235, 0.5)',
+                            'rgba(255, 206, 86, 0.5)',
+                            'rgba(75, 192, 192, 0.5)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Create User Average Score Chart (Horizontal Bar)
+            new Chart(document.getElementById('userAverageChart'), {
+                type: 'bar',
+                data: {
+                    labels: userAverageData.labels,
+                    datasets: [{
+                        label: 'Average Score',
+                        data: userAverageData.data,
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize charts when the page loads
+        document.addEventListener('DOMContentLoaded', createCharts);
+    </script>
+</body>
+</html>
