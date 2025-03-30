@@ -108,7 +108,7 @@
 
         .quizzes-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
             gap: 20px;
         }
 
@@ -118,6 +118,7 @@
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             position: relative;
+            min-height: 300px;
         }
 
         .quiz-header {
@@ -128,8 +129,31 @@
         }
 
         .quiz-actions {
+            position: absolute;
+            top: 0;
+            right: 0;
             display: flex;
-            gap: 10px;
+            gap: 8px;
+        }
+
+        .quiz-actions button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quiz-actions button:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+            transform: scale(1.1);
         }
 
         .edit-btn {
@@ -159,30 +183,51 @@
 
         .question-tag {
             background: var(--light-color);
-            padding: 10px;
+            padding: 15px;
             border-radius: 5px;
             font-size: 14px;
             position: relative;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .question-info {
+            flex: 1;
+            margin-right: 15px;
+        }
+
+        .question-title {
+            font-size: 16px;
+            margin-bottom: 5px;
         }
 
         .question-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .quiz-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .quiz-actions button {
-            background: none;
+        .question-actions button {
+            padding: 6px 12px;
             border: none;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 14px;
+            color: white;
+        }
+
+        .edit-question-btn {
+            background-color: #2ecc71;
+        }
+
+        .delete-question-btn {
+            background-color: #e74c3c;
+        }
+
+        .question-actions button:hover {
+            opacity: 0.9;
         }
 
         .add-question-btn {
@@ -300,6 +345,38 @@
             background-color: #ddd;
             color: black;
         }
+
+        .add-quiz-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .add-quiz-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .subject-name {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .quiz-description {
+            color: #666;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .quiz-deadline {
+            color: #666;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -310,7 +387,7 @@
             <a href="{{ url_for('admin_users') }}" class="nav-item">👥<span>Users</span></a>
             <a href="{{ url_for('stats') }}" class="nav-item">📈 <span>Performance Reports</span></a>
         </div>
-        <button class="logout-btn">Logout</button>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
     </nav>
 
     <main class="main-content">
@@ -319,31 +396,33 @@
             <div class="search-container">
                 🔍 <input type="text" placeholder="Search quizzes, questions...">
             </div>
+            <button class="add-quiz-btn" onclick="openAddQuizPopup()">+ Create Quiz</button>
         </header>
-
-    
-
-
-
-
 
         <div class="quizzes-grid">
             {% for quiz in quizzes %}
             <div class="quiz-card" id="quiz-card-{{ quiz.id }}">
                 <div class="quiz-header">
-                    <h3>{{ quiz.title }}</h3>
+                    <div>
+                        <h3>{{ quiz.title }}</h3>
+                        <p class="subject-name">Subject: {{ quiz.subject.name }}</p>
+                    </div>
                     <div class="quiz-actions">
-                        <button onclick="editQuiz('{{ quiz.id }}')">✏️</button>
-                        <button onclick="confirmDeleteQuiz('{{ quiz.id }}')">🗑️</button>
+                        <button onclick="editQuiz('{{ quiz.id }}')" title="Edit Quiz">✏️</button>
+                        <button onclick="confirmDeleteQuiz('{{ quiz.id }}')" title="Delete Quiz">🗑️</button>
                     </div>
                 </div>
+                <p class="quiz-description">{{ quiz.description }}</p>
                 <div class="questions-list">
                     {% for question in quiz.questions %}
                     <div class="question-tag" id="question-{{ quiz.id }}-{{ question.id }}">
-                        {{ question.title }}
-                        <span class="question-actions">
-                            <button class="delete-btn" onclick="confirmDeleteQuestion('{{ quiz.id }}', '{{ question.id }}')">Delete</button>
-                        </span>
+                        <div class="question-info">
+                            <h4 class="question-title">{{ question.title }}</h4>
+                        </div>
+                        <div class="question-actions">
+                            <button class="edit-question-btn" onclick="editQuestion('{{ quiz.id }}', '{{ question.id }}')">Edit</button>
+                            <button class="delete-question-btn" onclick="confirmDeleteQuestion('{{ quiz.id }}', '{{ question.id }}')">Delete</button>
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
@@ -356,17 +435,7 @@
     <div id="question-popup" class="popup">
         <div class="popup-content">
             <h3>Add New Question</h3>
-            <input type="hidden" id="chapter-id" value="">
             <input type="hidden" id="quiz-id" value="">
-            
-            <div>
-                <label for="chapter-select">Chapter ID:</label>
-                <select id="chapter-select">
-                    <option value="ch1">Chapter 1</option>
-                    <option value="ch2">Chapter 2</option>
-                    <option value="ch3">Chapter 3</option>
-                </select>
-            </div>
             
             <div>
                 <label for="question-title">Question Title:</label>
@@ -396,7 +465,7 @@
             </div>
             
             <div class="popup-actions">
-                <button class="popup-cancel" onclick="closePopup()">Cancel</button>
+                <button class="popup-cancel" onclick="closePopup('question-popup')">Cancel</button>
                 <button class="popup-save" onclick="saveQuestion()">Save</button>
             </div>
         </div>
@@ -405,7 +474,6 @@
     <div id="edit-quiz-popup" class="popup">
         <div class="popup-content">
             <h3>Edit Quiz</h3>
-            <input type="hidden" id="edit-chapter-id" value="">
             <input type="hidden" id="edit-quiz-id" value="">
             <div>
                 <label for="edit-quiz-title">Title:</label>
@@ -413,10 +481,10 @@
             </div>
             <div>
                 <label for="edit-quiz-description">Description:</label>
-                <textarea id="edit-quiz-description" placeholder="Quiz Description" rows="3">{{ quiz.description }}</textarea>
+                <textarea id="edit-quiz-description" placeholder="Quiz Description" rows="3"></textarea>
             </div>
             <div class="popup-actions">
-                <button class="popup-cancel" onclick="closePopup()">Cancel</button>
+                <button class="popup-cancel" onclick="closePopup('edit-quiz-popup')">Cancel</button>
                 <button class="popup-save" onclick="saveQuizEdits()">Save</button>
             </div>
         </div>
@@ -437,38 +505,63 @@
         </div>
     </div>
 
+    <div id="add-quiz-popup" class="popup">
+        <div class="popup-content">
+            <h2>Create New Quiz</h2>
+            <form id="newQuizForm">
+                <div class="form-group">
+                    <label for="quizSubject">Subject</label>
+                    <select class="form-control" id="quizSubject" required>
+                        <option value="">Select Subject</option>
+                        {% for subject in subjects %}
+                        <option value="{{ subject.id }}">{{ subject.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quizTitle">Title</label>
+                    <input type="text" class="form-control" id="quizTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="quizDescription">Description</label>
+                    <textarea class="form-control" id="quizDescription" rows="3"></textarea>
+                </div>
+                <div class="popup-actions">
+                    <button type="button" class="popup-cancel" onclick="closePopup('add-quiz-popup')">Cancel</button>
+                    <button type="submit" class="popup-save">Create Quiz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const chapterId = urlParams.get('chapterId');
         
         // Open question popup
-        function openAddQuestionPopup(chapterId, quizId) {
-            document.getElementById('chapter-id').value = chapterId;
+        function openAddQuestionPopup(quizId) {
             document.getElementById('quiz-id').value = quizId;
-            document.getElementById('chapter-select').value = chapterId;
             document.getElementById('question-popup').style.display = 'flex';
         }
 
-    
-
-        
         // Edit quiz
-        function editQuiz(chapterId, quizId) {
-            document.getElementById('edit-chapter-id').value = chapterId;
+        function editQuiz(quizId) {
             document.getElementById('edit-quiz-id').value = quizId;
             
-            // In a real app, you would populate the description with the existing value
-            // For demo purposes, we'll just set a placeholder
-            if (quizId === 'q1') {
-                document.getElementById('edit-quiz-title').value = "Basic concepts and fundamental principles";
-                document.getElementById('edit-quiz-description').value = "Basic concepts and fundamental principles";
-            } else if (quizId === 'q2') {
-                document.getElementById('edit-quiz-title').value = "Advanced topics and problem-solving techniques";
-                document.getElementById('edit-quiz-description').value = "Advanced topics and problem-solving techniques";
-            }
-            
-            document.getElementById('edit-quiz-popup').style.display = 'flex';
+            // Fetch quiz data from the server
+            fetch(`/get_quiz/${quizId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('edit-quiz-title').value = data.quiz.title;
+                        document.getElementById('edit-quiz-description').value = data.quiz.description || '';
+                        document.getElementById('edit-quiz-popup').style.display = 'flex';
+                    } else {
+                        alert("Error: " + data.message);
+                    }
+                })
+                .catch(error => console.error("Error:", error));
         }
         
         // Save quiz edits
@@ -489,7 +582,6 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert("Quiz updated successfully!");
                     location.reload();
                 } else {
                     alert("Error: " + data.message);
@@ -497,7 +589,7 @@
             })
             .catch(error => console.error("Error:", error));
             
-            closePopup();
+            closePopup('edit-quiz-popup');
         }
         
         // Confirm delete quiz
@@ -509,9 +601,8 @@
         }
         
         // Confirm delete question
-        function confirmDeleteQuestion(chapterId, quizId, questionId) {
+        function confirmDeleteQuestion(quizId, questionId) {
             document.getElementById('delete-type').value = 'question';
-            document.getElementById('delete-chapter-id').value = chapterId;
             document.getElementById('delete-quiz-id').value = quizId;
             document.getElementById('delete-question-id').value = questionId;
             document.getElementById('delete-confirm-popup').style.display = 'flex';
@@ -570,54 +661,148 @@
         }
         
         // Close popups
-        function closePopup() {
-            document.getElementById('question-popup').style.display = 'none';
-            document.getElementById('edit-quiz-popup').style.display = 'none';
+        function closePopup(popupId) {
+            const popup = document.getElementById(popupId);
+            if (popup) {
+                popup.style.display = 'none';
+                // Clear form if it's the question popup
+                if (popupId === 'question-popup') {
+                    document.getElementById('question-title').value = '';
+                    document.querySelectorAll('.question-option input[type="text"]').forEach(input => {
+                        input.value = '';
+                    });
+                    const correctAnswer = document.querySelector('input[name="correct-answer"]:checked');
+                    if (correctAnswer) {
+                        correctAnswer.checked = false;
+                    }
+                }
+            }
         }
         
         // Save question
         function saveQuestion() {
             const quizId = document.getElementById('quiz-id').value;
             const title = document.getElementById('question-title').value;
-
-            // Get all options
             const options = [];
-            document.querySelectorAll('.question-option input[type="text"]').forEach(option => {
-                options.push(option.value);
-            });
+            const optionInputs = document.querySelectorAll('.question-option input[type="text"]');
+            const correctAnswer = document.querySelector('input[name="correct-answer"]:checked');
 
-            // Get the correct answer index
-            const correctAnswer = document.querySelector('input[name="correct-answer"]:checked')?.value;
-
-            if (!title || options.some(opt => !opt) || correctAnswer === undefined) {
-                alert("Please fill in all fields before saving.");
+            // Validate inputs
+            if (!title) {
+                alert('Please enter a question title');
                 return;
             }
 
+            optionInputs.forEach(input => {
+                if (!input.value.trim()) {
+                    alert('Please fill in all options');
+                    return;
+                }
+                options.push(input.value.trim());
+            });
+
+            if (!correctAnswer) {
+                alert('Please select a correct answer');
+                return;
+            }
+
+            // Prepare data for API
+            const formData = {
+                quiz_id: quizId,
+                title: title,
+                options: options,
+                correct_answer: parseInt(correctAnswer.value)
+            };
+
+            // Send to server
             fetch('/add_question', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    quiz_id: quizId,
-                    title: title,
-                    options: options,
-                    correct_answer: parseInt(correctAnswer)
-                })
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert("Question added successfully!");
-                    location.reload();
+                    // Add the new question to the UI
+                    const questionsList = document.querySelector(`#quiz-card-${quizId} .questions-list`);
+                    const newQuestion = document.createElement('div');
+                    newQuestion.className = 'question-tag';
+                    newQuestion.id = `question-${quizId}-${data.question_id}`;
+                    newQuestion.innerHTML = `
+                        <div class="question-info">
+                            <h4 class="question-title">${title}</h4>
+                        </div>
+                        <div class="question-actions">
+                            <button class="edit-question-btn" onclick="editQuestion('${quizId}', '${data.question_id}')">Edit</button>
+                            <button class="delete-question-btn" onclick="confirmDeleteQuestion('${quizId}', '${data.question_id}')">Delete</button>
+                        </div>
+                    `;
+                    questionsList.appendChild(newQuestion);
+                    
+                    // Clear form and close popup
+                    closePopup('question-popup');
                 } else {
-                    alert("Error: " + data.message);
+                    alert('Error: ' + data.message);
                 }
             })
-            .catch(error => console.error("Error:", error));
-            
-            closePopup();
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while adding the question.');
+            });
         }
 
-        </script>
+        // Open add quiz popup
+        function openAddQuizPopup() {
+            document.getElementById('add-quiz-popup').style.display = 'flex';
+        }
+
+        // Save new quiz
+        document.getElementById('newQuizForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const subjectId = document.getElementById('quizSubject').value;
+            const title = document.getElementById('quizTitle').value;
+            const description = document.getElementById('quizDescription').value;
+
+            if (!subjectId || !title) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const quizData = {
+                subject_id: subjectId,
+                title: title,
+                description: description
+            };
+
+            fetch('/create_quiz', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(quizData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Quiz created successfully!');
+                    closePopup('add-quiz-popup');
+                    location.reload();
+                } else {
+                    alert('Error creating quiz: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error creating quiz');
+            });
+        });
+
+        function editQuestion(quizId, questionId) {
+            // Implement question editing functionality
+            alert('Question editing will be implemented soon');
+        }
+    </script>
 </body>
 </html>

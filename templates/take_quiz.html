@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Take Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f6;
+            min-height: 100vh;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .quiz-header {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .quiz-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .quiz-subject {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+        .question-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .question-title {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .options-list {
+            list-style: none;
+        }
+        .option-item {
+            margin-bottom: 10px;
+        }
+        .option-label {
+            display: block;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .option-label:hover {
+            background-color: #f8f9fa;
+        }
+        .option-input {
+            display: none;
+        }
+        .option-input:checked + .option-label {
+            background-color: #3498db;
+            color: white;
+        }
+        .submit-btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        .submit-btn:hover {
+            background-color: #27ae60;
+        }
+        .progress-bar {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .question-count {
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1 class="quiz-title">{{ quiz.title }}</h1>
+            <div class="quiz-subject">{{ quiz.subject_name }}</div>
+        </div>
+
+        <div class="progress-bar">
+            <span class="question-count">Question {{ current_question }}/{{ total_questions }}</span>
+        </div>
+
+        <form id="quizForm" method="POST" action="{{ url_for('submit_quiz', quiz_id=quiz.id) }}">
+            {% for question in questions %}
+            <div class="question-container">
+                <div class="question-title">{{ question.title }}</div>
+                <ul class="options-list">
+                    {% for option in question.options %}
+                    <li class="option-item">
+                        <input type="radio" name="answer_{{ question.id }}" value="{{ loop.index0 }}" id="option_{{ question.id }}_{{ loop.index0 }}" class="option-input" required>
+                        <label for="option_{{ question.id }}_{{ loop.index0 }}" class="option-label">{{ option }}</label>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="submit-btn">Submit Quiz</button>
+        </form>
+    </div>
+
+    <script>
+        // Prevent form resubmission on page refresh
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+    </script>
+</body>
+</html> 

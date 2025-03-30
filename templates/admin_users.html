@@ -337,6 +337,13 @@
         const closeButtons = document.querySelectorAll('[data-bs-dismiss="modal"]');
         let selectedUserId = null;
 
+        function resetModal() {
+            document.getElementById('selectedUserName').textContent = '';
+            document.getElementById('selectedUserId').value = '';
+            document.getElementById('quizSelect').value = '';
+            modal.classList.remove('show');
+        }
+
         // Open modal
         assignButtons.forEach(button => {
             button.addEventListener('click', function() {
@@ -353,14 +360,14 @@
         // Close modal
         closeButtons.forEach(button => {
             button.addEventListener('click', function() {
-                modal.classList.remove('show');
+                resetModal();
             });
         });
 
         // Close when clicking outside
         window.addEventListener('click', function(event) {
             if (event.target === modal) {
-                modal.classList.remove('show');
+                resetModal();
             }
         });
 
@@ -376,14 +383,24 @@
             fetch('/assign_quiz', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: parseInt(selectedUserId), quiz_id: parseInt(quizId) })
+                body: JSON.stringify({ 
+                    user_id: parseInt(selectedUserId), 
+                    quiz_id: parseInt(quizId)
+                })
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message);
-                modal.classList.remove('show'); // Close modal
+                if (data.message) {
+                    alert(data.message);
+                    resetModal();
+                } else {
+                    alert('An error occurred while assigning the quiz.');
+                }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while assigning the quiz. Please check the console for details.');
+            });
         });
     </script>
 </body>
